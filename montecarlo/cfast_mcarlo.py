@@ -247,11 +247,11 @@ class CfastMcarlo():
     def _section_matl(self):# {{{
         txt=(
         '!! MATL,name,param1,param2,param3,param4,param5,param6',
-        'MATL,CONCRETE,1.7,840,2500,0.4,0.9,concrete',
-        'MATL,GYPSUM,0.3,1000,1000,0.02,0.85,gipsum',
-        'MATL,GLASS,0.8,840,2500,0.013,0.9,glass',
-        'MATL,BLOCK,0.3,840,800,0.03,0.85,floor',
-        'MATL,BRICK,0.3,840,800,0.03,0.85,brick',
+        'MATL,concrete,1.7,840,2500,0.4,0.9,concrete',
+        'MATL,gypsum,0.3,1000,1000,0.02,0.85,gipsum',
+        'MATL,glass,0.8,840,2500,0.013,0.9,glass',
+        'MATL,block,0.3,840,800,0.03,0.85,floor',
+        'MATL,brick,0.3,840,800,0.03,0.85,brick',
         '',
         )
         return "\n".join(txt)

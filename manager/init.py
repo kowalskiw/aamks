@@ -152,7 +152,7 @@ class OnInit():
         2>/dev/null ignores "OSError: [Errno 98] Address already in use"
         '''
 
-        Popen('cd {}; python3 -m http.server 8123 2>/dev/null 1>/dev/null &'.format(os.environ['AAMKS_PROJECT']), shell=True)
+        Popen('cd /home/aamks_users/; python3 -m http.server 8123 2>/dev/null 1>/dev/null &', shell=True)
 # }}}
 
 class OnEnd():
@@ -186,8 +186,10 @@ class OnEnd():
         project=self.conf['general']['project_id']
         for i in range(*si.get()):
             worker="{}/workers/{}".format(os.environ['AAMKS_PROJECT'],i)
-            gearman="gearman -f aRun 'http://{}/users{} {} &'".format(os.environ['AAMKS_SERVER'],worker.replace("/home/aamks_users",""), project)
-            print("cd /usr/local/aamks/evac/; python3 worker.py http://{}:8123/workers/{}".format(os.environ['AAMKS_SERVER'],i))
+            worker = worker.replace("/home","")
+            gearman="gearman -f aRun 'http://{}{} &'".format(os.environ['AAMKS_SERVER'], worker)
+            #print("cd /usr/local/aamks/evac/; python3 worker.py http://{}:8123/workers/{}".format(os.environ['AAMKS_SERVER'],i))
+            print(gearman)
             os.system(gearman)
 # }}}
     def _visualize_aanim(self):# {{{

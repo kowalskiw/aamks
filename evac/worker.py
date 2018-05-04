@@ -21,9 +21,9 @@ import zipfile
 from include import SendMessage
 
 
-SIMULATION_TYPE = 'NO_CFAST'
-#SIMULATION_TYPE = 1
-SendMessage("mimooh")
+#SIMULATION_TYPE = 'NO_CFAST'
+SIMULATION_TYPE = 1
+SendMessage("Start simulations")
 
 
 
@@ -285,7 +285,7 @@ class Worker:
         anim_json = json.read('{}/workers/vis/anims.json'.format(os.environ['AAMKS_PROJECT']))
 
         for i in self.vars['conf']['FLOORS_DATA'].keys():
-            shutil.copy('f{}_s{}.anim.zip'.format(i, self.sim_id), '{}{}/{}'.format(os.environ['AAMKS_PROJECT'], 'workers', self.sim_id))
+            shutil.copy('f{}_s{}.anim.zip'.format(i, self.sim_id), '{}/{}/{}'.format(os.environ['AAMKS_PROJECT'], 'workers', self.sim_id))
             anim_json = self._write_animation_file(anim_json, i)
 
         json.write(anim_json, '{}/workers/vis/anims.json'.format(os.environ['AAMKS_PROJECT']))
@@ -301,6 +301,7 @@ class Worker:
         self.do_simulation()
         self._write_animation()
         self._write_report('psql_connect')
+        self._copy_animation_files()
 
     def test(self):
         self.get_config()
@@ -313,8 +314,24 @@ class Worker:
         self._copy_animation_files()
 
 
-w = Worker()
-if SIMULATION_TYPE == 'NO_CFAST':
-    w.test()
+try:
+    w = Worker()
+except Exception as e:
+    SendMessage(e)
 else:
-    w.main()
+    SendMessage("Alles in grunem bereisch")
+
+if SIMULATION_TYPE == 'NO_CFAST':
+    try:
+        w.test()
+    except Exception as e:
+        SendMessage(e)
+    else:
+        SendMessage("Alles in grunem bereisch")
+else:
+    try:
+        w.main()
+    except Exception as e:
+        SendMessage(e)
+    else:
+        SendMessage("Alles in grunem bereisch")
