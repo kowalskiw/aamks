@@ -1,111 +1,118 @@
 import { Injectable } from '@angular/core';
 import { Observable, Observer, Subject, BehaviorSubject } from 'rxjs';
-import { WebsocketMessage } from './websocket-message';
+import { WebsocketMessageObject } from './websocket-message';
 import { DefaultRouteReuseStrategy } from '@angular/router/src/route_reuse_strategy';
 import { Main } from '../main/main';
 import { MainService } from '../main/main.service';
-import * as _ from 'lodash';
 import { timeout } from 'rxjs/operators/timeout';
 import { CadService } from '../cad/cad.service';
 import { resolve } from 'q';
-import { MeshObject } from '../fds-object/mesh';
+import { cloneDeep, remove, each } from 'lodash';
+import { Risk } from '../risk-object/risk-object';
+import { NotifierService } from 'angular-notifier';
 
 @Injectable()
 export class WebsocketService {
   // change to user variable
-  WS_URL:string = "ws://localhost:2012";
-  wsObservable:Observable<any>;
-  wsObserver:Observer<any>;
-  private ws;
-  public dataStream:BehaviorSubject<any>;
-  isConnected:boolean;
-  main:Main;
+  WS_URL: string = "ws://localhost:2012";
+  wsObservable: Observable<any>;
+  wsObserver: Observer<any>;
+  ws;
+  public dataStream: BehaviorSubject<any>;
+  isConnected: boolean;
 
-  requestCallbacks:object = {};
+  main: Main;
+  risk: Risk;
+
+  requestCallbacks: object = {};
   requestStatus = new Subject<string>();
 
-  constructor(private mainService:MainService, private cadService:CadService) {
+  constructor(
+    private mainService: MainService,
+    private cadService: CadService,
+    private readonly notifierService: NotifierService
+  ) {
     this.mainService.getMain().subscribe(main => this.main = main);
   }
 
-   /** Generates random id for websocket messages */
-  idGenerator() {
-    var id=Date.now()+'';
-    var rand=Math.round(1000*Math.random())+'';
-    id=id+rand;
+  /** Generates random id for websocket messages */
+  public idGenerator() {
+    var id = Date.now() + '';
+    var rand = Math.round(1000 * Math.random()) + '';
+    id = id + rand;
     return id;
   }
 
-   /** Method initalize websocket connection */
-   initializeWebSocket() {
-      console.log("Initializing CAD connection ...");
-      this.isConnected = false;
+  /** Method initalize websocket connection */
+  public initializeWebSocket() {
 
-      this.wsObservable = Observable.create((observer) => {
-        this.ws = new WebSocket(this.WS_URL);
-        this.ws.onopen = (e) => {
-          this.isConnected = true;
-          console.log("CAD connection opened ...");
-        };
+    this.isConnected = false;
 
-        this.ws.onclose = (e) => {
-          if (e.wasClean) {
-            observer.complete();
-          } else {
-            observer.error(e);
-          }
-          this.isConnected = false;
-        };
-      
-        this.ws.onerror = (e) => {
+    this.wsObservable = Observable.create((observer) => {
+      this.ws = new WebSocket(this.WS_URL);
+      this.ws.onopen = (e) => {
+        this.isConnected = true;
+        this.notifierService.notify('success', 'CAD connection opened');
+      };
+
+      this.ws.onclose = (e) => {
+        if (e.wasClean) {
+          observer.complete();
+        } else {
           observer.error(e);
-          this.isConnected = false;
         }
-      
-        this.ws.onmessage = (e) => {
-          // manage CAD requests
-          // tutaj trzeba to obczaic
-          observer.next(JSON.parse(e.data));
+        this.isConnected = false;
+      };
 
-          let message:WebsocketMessage = JSON.parse(e.data);
-          if (message.requestID) {
-            // answer from CAD
-            this.answerMessage(message);
-          }
-          else {
-            // new request from CAD
-            this.requestMessage(message);
-          }
-
-        }
-      
-        return () => {
-          console.log("CAD Connection closed ...");
-          this.ws.close();
-          this.isConnected = false;
-        };
-      }).share().retry();
-
-      this.wsObserver = {
-        next: (data: Object) => {
-          if (this.ws.readyState === WebSocket.OPEN) {
-            this.ws.send(JSON.stringify(data));
-          }
-        },
-        error: (err) => {
-          console.log("Error sending data:");
-          console.log(err);
-        },
-        complete: () => {
-
-        }
+      this.ws.onerror = (e) => {
+        observer.error(e);
+        this.isConnected = false;
       }
 
-      this.dataStream = Subject.create(this.wsObserver, this.wsObservable);
-   }
+      this.ws.onmessage = (e) => {
+        // manage CAD requests
+        // tutaj trzeba to obczaic
+        observer.next(JSON.parse(e.data));
 
-  /** Method sends message to CAD software */ 
-  public sendMessage(message:WebsocketMessage) {
+        let message: WebsocketMessageObject = JSON.parse(e.data);
+        if (message.requestID) {
+          // answer from CAD
+          this.answerMessage(message);
+        }
+        else {
+          // new request from CAD
+          this.requestMessage(message);
+        }
+
+      }
+
+      return () => {
+        this.notifierService.notify('warning', 'CAD connection closed');
+        this.ws.close();
+        this.isConnected = false;
+      };
+    }).share().retry();
+
+    this.wsObserver = {
+      next: (data: Object) => {
+        if (this.ws.readyState === WebSocket.OPEN) {
+          this.ws.send(JSON.stringify(data));
+        }
+      },
+      error: (err) => {
+        console.log("Error sending data:");
+        console.log(err);
+      },
+      complete: () => {
+
+      }
+    }
+
+    this.dataStream = Subject.create(this.wsObserver, this.wsObservable);
+  }
+
+  /** Method sends message to CAD software */
+  public sendMessage(message: WebsocketMessageObject) {
     console.log("\nMessage sent to CAD:")
     console.log(message);
     console.log("====================\n")
@@ -118,8 +125,8 @@ export class WebsocketService {
     return;
   }
 
-   /** Method register answer/confirmation from CAD software */
-  private answerMessage(message:WebsocketMessage) {
+  /** Method register answer/confirmation from CAD software */
+  private answerMessage(message: WebsocketMessageObject) {
     console.log("\nAnswer from CAD:");
     console.log(message);
     console.log("====================\n")
@@ -133,105 +140,56 @@ export class WebsocketService {
     return;
   }
 
-   /** 
-    * Method processes message from CAD software.
-    * Creates new fds object with new geometry.
-    */
-  private requestMessage(message:WebsocketMessage) {
+  /** 
+   * Method processes message from CAD software.
+   */
+  private requestMessage(message: WebsocketMessageObject) {
+
+    console.clear();
     console.log("Request from CAD ...");
     console.log(message);
 
-    switch(message.method) {
-      case "fExport": {
-        console.log("fExport");
-        this.fExport(message.data);
-
-        break;
-      }
-      case "fSelect": {
-
-        break;
-      }
-      default: {
-
-        break;
-      }
-    }
-
     // Send answer to CAD software;
-    let answer:WebsocketMessage = {
-      method: message.method,
+    let answer: WebsocketMessageObject = {
       id: this.idGenerator(),
       requestID: message.id,
+      status: "success",
+      method: message.method,
       data: {},
-      status: "success"
     }
+
+    try {
+      switch (message.method) {
+        case 'cExport': {
+          console.log('cExport');
+          if (this.main.currentRiskScenario != undefined) {
+            this.main.currentRiskScenario.riskObject.geometry = message.data;
+          }
+          else {
+            answer.status = "error";
+          }
+          break;
+        }
+
+        default: {
+
+          break;
+        }
+      }
+    } catch (e) {
+      if (e instanceof EvalError) {
+        console.log(e.name + ': ' + e.message);
+      } else if (e instanceof RangeError) {
+        console.log(e.name + ': ' + e.message);
+      }
+      else {
+        console.log(e.name + ': ' + e.message);
+      }
+      answer.status = "error";
+    }
+
     this.sendMessage(answer);
     return;
   }
-
-  /** Importing CAD geometry */
-  private fExport(data) {
-
-    // Meshes
-    // Delete old elements
-    _.remove(this.main.currentFdsScenario.fdsObject.geometry.meshes, (mesh) => {
-      return true;
-    });
-    // Transform CAD elements
-    let newMeshes = this.cadService.transformMeshes(data.geometry.meshes, this.main.currentFdsScenario.fdsObject.geometry.meshes);
-    // Set new meshes to current scenario
-    _.each(newMeshes, (mesh) => {
-      this.main.currentFdsScenario.fdsObject.geometry.meshes.push(mesh);
-    });
-
-
-  }
-
-  /** Sync CAD object with GUI form */
-  syncUpdateItem(elementType:string, element:object) {
-    
-    let method;
-    let data = { };
-    
-    switch(elementType) {
-
-      case "mesh":
-        method = "updateMeshWeb";
-        data['idAC'] = element['idAC'];
-        data['xb'] = element['xb'];
-        break;
-
-      case "obst":
-        method = "updateObstWeb";
-        data['idAC'] = element['idAC'];
-        data['xb'] = element['xb'];
-        break;
-
-      default:
-        data = undefined;
-    }
-
-    if(this.isConnected && data != undefined) {
-      // Create message
-      let message:WebsocketMessage = {
-        method: method,
-        data: data,
-        id: this.idGenerator(),
-        requestID: '',
-        status: "waiting"
-      }
-      // Send message to CAD
-      this.sendMessage(message);
-
-    }
-    // Register offline changes ... if needed ??
-    else {
-      console.log("No CAD connected ...");
-
-    }
-
-  }
-
 
 }

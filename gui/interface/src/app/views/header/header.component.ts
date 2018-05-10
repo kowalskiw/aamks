@@ -2,9 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { Main } from '../../services/main/main';
 import { MainService } from '../../services/main/main.service';
 import { WebsocketService } from '../../services/websocket/websocket.service';
-import { FdsScenarioService } from '../../services/fds-scenario/fds-scenario.service';
-import { Library } from '../../services/library/library';
-import { LibraryService } from '../../services/library/library.service';
+import { RiskScenarioService } from '../../services/risk-scenario/risk-scenario.service';
+import { UiState } from '../../services/ui-state/ui-state';
+import { UiStateService } from '../../services/ui-state/ui-state.service';
 
 @Component({
   selector: 'app-header',
@@ -14,50 +14,63 @@ import { LibraryService } from '../../services/library/library.service';
 export class HeaderComponent implements OnInit {
 
   main: Main;
-  lib: Library;
+  uiState: UiState;
+  websocket: WebsocketService;
 
   constructor(
-    private mainService: MainService, 
-    private websocket: WebsocketService, 
-    private fdsScenarioService: FdsScenarioService, 
-    private libraryService: LibraryService
-  ) {}
+    private mainService: MainService,
+    private websocketService: WebsocketService,
+    private riskScenarioService: RiskScenarioService,
+    private uiStateService: UiStateService
+  ) { }
 
   ngOnInit() {
-      this.mainService.getMain().subscribe(main => this.main = main);
-    setTimeout(() => {
-      this.libraryService.getLibrary().subscribe(lib => this.lib = lib);
-    }, 1000)
+    this.mainService.getMain().subscribe(main => this.main = main);
+    this.uiStateService.getUiState().subscribe(uiState => this.uiState = uiState);
+    this.websocket = this.websocketService;
   }
 
-  showDiagnosticData() {
+  public showDiagnosticData() {
     console.clear();
     console.log("======== Diagnostic ========");
-    //console.log("--- Main -------------------");
-    //console.log(this.main);
-    //console.log();
-    console.log("--- Current fds scenario ---");
-    console.log(this.main.currentFdsScenario);
-    console.log();
-    console.log("--- Library ---");
-    console.log(this.lib);
-    console.log();
-    if (this.main.currentFdsScenario != undefined) {
-      //console.log("--- Fds object -------------");
-      //console.log(this.main.currentFdsScenario.fdsObject);
-      //console.log();
-      //console.log("--- Fds object toJSON ------");
-      //console.log(this.main.currentFdsScenario.fdsObject.toJSON());
-      //console.log();
-      //console.log("--- Ventilation object -----");
-      //console.log(this.main.currentFdsScenario.fdsObject.ventilation);
-      //console.log();
-    }
-    console.log("======== Diagnostic ========");
+    console.log("--- Main -------------------");
+    console.log(this.main);
+    console.log("--- Current risk scenario ---");
+    console.log(this.main.currentRiskScenario);
+    console.log("======== End Diagnostic ========");
   }
 
-  setCurrentFdsScenario(projectId: number, fdsScenarioId: number) {
-    this.fdsScenarioService.setCurrentFdsScenario(projectId, fdsScenarioId).subscribe();
+  /** Update risk scenario */
+  public updateRiskScenario(projectId: number, riskScenarioId: number) {
+    this.riskScenarioService.updateRiskScenario(projectId, riskScenarioId);
+  }
+
+  /** Run risk scenario */
+  public runRiskScenario() {
+    this.riskScenarioService.runRiskScenario();
+  }
+
+  /** Connect to CAD */
+  public connectCad() {
+    if (!this.websocketService.isConnected) {
+      this.websocketService.dataStream.subscribe(
+        (data) => { },
+        (err) => { console.log(err); },
+        () => { console.log("Websocket disconnected ..."); }
+      );
+    } 
+    else {
+      this.websocketService.dataStream.unsubscribe();
+      this.websocketService.ws.close();
+    }
+  }
+
+  public logOut() {
+    window.location.href = this.main.hostAddres + '/logout';
+  }
+
+  activate(option: string) {
+    this.uiState.active = option;
   }
 
 }

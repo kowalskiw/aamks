@@ -1,13 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 
 import { Project } from '../../../services/project/project';
-import * as _ from 'lodash';
 import { MainService } from '../../../services/main/main.service';
 import { ProjectService } from '../../../services/project/project.service';
-import { FdsScenarioService } from '../../../services/fds-scenario/fds-scenario.service';
 import { Main } from '../../../services/main/main';
 import { CategoryService } from '../../../services/category/category.service';
 import { CategoryObject } from '../../../services/category/category';
+import { RiskScenarioService } from '../../../services/risk-scenario/risk-scenario.service';
+import { find } from 'lodash';
 
 @Component({
   selector: 'app-projects',
@@ -15,14 +15,14 @@ import { CategoryObject } from '../../../services/category/category';
   styleUrls: ['./projects.component.scss']
 })
 export class ProjectsComponent implements OnInit {
-  main:Main;
-  projects:Project[] = [];
+  main: Main;
+  projects: Project[] = [];
 
-  constructor(private mainService:MainService, 
-              private projectService:ProjectService, 
-              private fdsScenarioService:FdsScenarioService,
-              private categoryService:CategoryService
-            ) { }
+  constructor(private mainService: MainService,
+    private projectService: ProjectService,
+    private riskScenarioService: RiskScenarioService,
+    private categoryService: CategoryService
+  ) { }
 
   ngOnInit() {
     this.mainService.getMain().subscribe(main => this.main = main);
@@ -30,7 +30,7 @@ export class ProjectsComponent implements OnInit {
   }
 
   /** Set/unset project to current in main object */
-  setCurrentProject(index:number) {
+  setCurrentProject(index: number) {
     this.projectService.setCurrnetProject(index);
   }
   unsetCurrentProject() {
@@ -43,21 +43,21 @@ export class ProjectsComponent implements OnInit {
   }
 
   /** Update project name/desc/category in DB */
-  updateProject(index:number) {
+  updateProject(index: number) {
     this.projectService.updateProject(index);
   }
 
   /** Delete project from DB */
-  deleteProject(index:number){
+  deleteProject(index: number) {
     this.projectService.deleteProject(index);
   }
 
   /** Check if category is visible (turned on/off) */
-  checkProjectCategory(categoryUuid:string) {
-    let category = _.find(this.main.categories, function(category) {
+  checkProjectCategory(categoryUuid: string) {
+    let category = find(this.main.categories, function (category) {
       return category.uuid == categoryUuid;
     });
-    if(category && category.active == true) {
+    if (category && category.active == true) {
       return true;
     } else {
       return false;
@@ -65,60 +65,31 @@ export class ProjectsComponent implements OnInit {
   }
 
   /** Change category activity */
-  changeCategoryActivity(categoryUuid:string, categoryIndex:number) {
-    if(this.main.currentProject != undefined && this.main.currentProject.category == categoryUuid) {
-      if(this.main.currentFdsScenario != undefined) {
-        this.main.currentFdsScenario = undefined;
-      }
+  changeCategoryActivity(categoryUuid: string, categoryIndex: number) {
+    if (this.main.currentProject != undefined && this.main.currentProject.category == categoryUuid) {
       this.main.currentProject = undefined;
     }
     this.categoryService.updataCategory(categoryUuid, this.main.categories[categoryIndex]);
   }
 
-  /** Set fds scenario to current */
-  setCurrentFdsScenario(projectId:number, fdsScenarioId:number) {
-    this.fdsScenarioService.setCurrentFdsScenario(projectId, fdsScenarioId).subscribe();
-  }
-
-  /** Add fds scenario */
-  addFdsScenario(projectId:number) {
-    this.fdsScenarioService.createFdsScenario(projectId);
-  }
-
-  /** Set fds scenario name  */
-  updateFdsScenario(projectId:number, fdsScenarioId:number) {
-    this.fdsScenarioService.updateFdsScenario(projectId, fdsScenarioId, 'head');
-  }
-
-  /** Download fds file */
-  downloadFdsScenario(projectId:number, fdsScenarioId:number) {
-    console.log("download fds scenario");
-  }
-
-  /** Delete fds scenario */
-  deleteFdsScenario(projectIndex:number, fdsScenarioIndex:number) {
-    this.fdsScenarioService.deleteFdsScenario(projectIndex, fdsScenarioIndex);
-  }
-
   /** Set risk scenario to current */
-  setCurrentRiskScenario(projectId:number, fdsScenarioId:number) {
-    console.log("set current risk scenario");
-    //this.fdsScenarioService.setCurrentFdsScenario(projectId, fdsScenarioId).subscribe();
+  setCurrentRiskScenario(projectId: number, riskScenarioId: number) {
+    this.riskScenarioService.setCurrentRiskScenario(projectId, riskScenarioId).subscribe();
   }
 
   /** Add risk scenario */
-  addRiskScenario(projectId:number) {
-    console.log("add risk scenario");
+  addRiskScenario(projectId: number) {
+    this.riskScenarioService.createRiskScenario(projectId);
   }
 
   /** Update risk scenario */
-  updateRiskScenario(projectId:number, riskScenarioId:number) {
-
+  updateRiskScenario(projectId: number, riskScenarioId: number) {
+    this.riskScenarioService.updateRiskScenario(projectId, riskScenarioId, 'head');
   }
 
-  /** Delete fds scenario */
-  deleteRiskScenario() {
-    console.log("delete risk scenario");
+  /** Delete risk scenario */
+  deleteRiskScenario(projectIndex: number, riskScenarioIndex: number) {
+    this.riskScenarioService.deleteRiskScenario(projectIndex, riskScenarioIndex);
   }
 
 
