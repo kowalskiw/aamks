@@ -1,0 +1,134 @@
+<div class="amper-container">
+  <div class="form-box">
+
+    <div class="form-title">
+      <label class='header'>Alarming level and devices</label>
+    </div>
+
+    <div class="form-row">
+      <div>
+        <label>Alarming type:</label>
+        <div class="field-container">
+          <select [(ngModel)]="buildingInfrastructure.alarming" (change)="setPreMovementTimes()">
+            <option *ngFor="let element of ALARMING | slice:alarmingSliceMin:alarmingSliceMax" [ngValue]="element.value">{{element.label}}</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div>
+        <label>Has detectors:</label>
+        <div class="field-container">
+          <input type="checkbox" [(ngModel)]="buildingInfrastructure.hasDetectors" />
+        </div>
+      </div>
+      <div *ngIf="buildingInfrastructure.hasDetectors">
+        <label>Detector type:</label>
+        <div class="field-container">
+          <select [(ngModel)]="buildingInfrastructure.detectors.type">
+            <option *ngFor="let element of DETECTOR_TYPE" [ngValue]="element.value">{{element.label}}</option>
+          </select>
+        </div>
+      </div>
+      <div *ngIf="buildingInfrastructure.hasDetectors && buildingInfrastructure.detectors.type == 'heat'">
+        <label>RTI:</label>
+        <div class="field-container">
+          <input type="text" [ngModelOptions]="{updateOn:'blur'}" [(ngModel)]="buildingInfrastructure.detectors.rti" decimalInput>
+        </div>
+      </div>
+      <div *ngIf="buildingInfrastructure.hasDetectors && buildingInfrastructure.detectors.type == 'heat'">
+        <label>Activation temperature:</label>
+        <div class="field-container">
+          <input type="text" [ngModelOptions]="{updateOn:'blur'}" [(ngModel)]="buildingInfrastructure.detectors.activationTemperature" decimalInput>
+        </div>
+      </div>
+      <div *ngIf="buildingInfrastructure.hasDetectors && buildingInfrastructure.detectors.type == 'heat'">
+        <label>Activation temperature std:</label>
+        <div class="field-container">
+          <input type="text" [ngModelOptions]="{updateOn:'blur'}" [(ngModel)]="buildingInfrastructure.detectors.activationTemperatureSd" decimalInput>
+        </div>
+      </div>
+      <div *ngIf="buildingInfrastructure.hasDetectors && buildingInfrastructure.detectors.type == 'smoke'">
+        <label>Activation obscuration:</label>
+        <div class="field-container">
+          <input type="text" [ngModelOptions]="{updateOn:'blur'}" [(ngModel)]="buildingInfrastructure.detectors.activationObscuration" decimalInput>
+        </div>
+      </div>
+      <div *ngIf="buildingInfrastructure.hasDetectors && buildingInfrastructure.detectors.type == 'smoke'">
+        <label>Activation obscuration std:</label>
+        <div class="field-container">
+          <input type="text" [ngModelOptions]="{updateOn:'blur'}" [(ngModel)]="buildingInfrastructure.detectors.activationObscurationSd" decimalInput>
+        </div>
+      </div>
+      <div *ngIf="buildingInfrastructure.hasDetectors && buildingInfrastructure.detectors.type == 'smoke'">
+        <label>Not broken probability:</label>
+        <div class="field-container">
+          <input type="text" [ngModelOptions]="{updateOn:'blur'}" [(ngModel)]="buildingInfrastructure.detectors.notBrokenProbability" decimalInput>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div>
+        <label>Has sprinklers:</label>
+        <div class="field-container">
+          <input type="checkbox" [(ngModel)]="buildingInfrastructure.hasSprinklers" />
+        </div>
+      </div>
+      <div *ngIf="buildingInfrastructure.hasSprinklers">
+        <label>RTI:</label>
+        <div class="field-container">
+          <input type="text" [ngModelOptions]="{updateOn:'blur'}" [(ngModel)]="buildingInfrastructure.sprinklers.rti" decimalInput>
+        </div>
+      </div>
+      <div *ngIf="buildingInfrastructure.hasSprinklers">
+        <label>Activation temperature:</label>
+        <div class="field-container">
+          <input type="text" [ngModelOptions]="{updateOn:'blur'}" [(ngModel)]="buildingInfrastructure.sprinklers.activationTemperature" decimalInput>
+        </div>
+      </div>
+      <div *ngIf="buildingInfrastructure.hasSprinklers">
+        <label>Activation temperature std:</label>
+        <div class="field-container">
+          <input type="text" [ngModelOptions]="{updateOn:'blur'}" [(ngModel)]="buildingInfrastructure.sprinklers.activationTemperatureSd" decimalInput>
+        </div>
+      </div>
+      <div *ngIf="buildingInfrastructure.hasSprinklers">
+        <label>Spray density:</label>
+        <div class="field-container">
+          <input type="text" [ngModelOptions]="{updateOn:'blur'}" [(ngModel)]="buildingInfrastructure.sprinklers.sprayDensity" decimalInput>
+        </div>
+      </div>
+      <div *ngIf="buildingInfrastructure.hasSprinklers">
+        <label>Spray density std:</label>
+        <div class="field-container">
+          <input type="text" [ngModelOptions]="{updateOn:'blur'}" [(ngModel)]="buildingInfrastructure.sprinklers.sprayDensitySd" decimalInput>
+        </div>
+      </div>
+      <div *ngIf="buildingInfrastructure.hasSprinklers">
+        <label>Not broken probability:</label>
+        <div class="field-container">
+          <input type="text" [ngModelOptions]="{updateOn:'blur'}" [(ngModel)]="buildingInfrastructure.sprinklers.notBrokenProbability" decimalInput>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div>
+        <label>Has NSHEVS:</label>
+        <div class="field-container">
+          <input type="checkbox" [(ngModel)]="buildingInfrastructure.hasNshevs" />
+        </div>
+      </div>
+      <div *ngIf="buildingInfrastructure.hasNshevs">
+        <label>Activation time:</label>
+        <div class="field-container">
+          <input type="text" [ngModelOptions]="{updateOn:'blur'}" [(ngModel)]="buildingInfrastructure.nshevs.activationTime" decimalInput>
+        </div>
+      </div>
+    </div>
+
+
+  </div>
+</div>
