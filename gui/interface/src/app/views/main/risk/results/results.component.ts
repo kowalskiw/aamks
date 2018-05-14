@@ -18,15 +18,18 @@ export class ResultsComponent implements OnInit {
 
   @HostListener('wheel', ['$event'])
   onWheel(event) {
-    console.log(event);
-    console.log(this.project.view.zoom);
-    if (event.deltaY < 0) { 
-      this.project.view.scale(0.9);
-      //this.project.view.zoom -= 0.1;
-    } else {
-      this.project.view.scale(1.1);
-      //this.project.view.zoom += 0.1;
-    }
+      // TODO: Add zooming under the cursor
+      let oldZoom = this.project.view.zoom;
+      let oldCenter = this.project.view.center;
+      let viewPos = this.project.view.viewToProject(event.point);
+      let newZoom = event.deltaY > 0 ? oldZoom / 1.1 : oldZoom * 1.1;
+
+      let zoomScale = oldZoom / newZoom;
+      let centerAdjust = viewPos.subtract(oldCenter);
+      let offset = viewPos.subtract(centerAdjust.multiply(newZoom)).subtract(oldCenter);
+
+      this.project.view.zoom = newZoom;
+      //this.project.view.center = this.project.view.center.add(offset);
   }
 
   scope: PaperScope;
