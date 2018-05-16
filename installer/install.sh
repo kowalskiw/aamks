@@ -28,8 +28,8 @@ AAMKS_PG_PASS='hulakula'
 	exit;
 } 
 
-sudo apt-get install postgresql python3-pip python3-shapely python3-numpy python3-networkx python3-psycopg2 gearman sendxmpp xdg-utils
-sudo -H pip3 install webcolors pyhull 
+sudo apt-get install postgresql python3-pip python3-numpy python3-networkx python3-psycopg2 gearman sendxmpp xdg-utils
+sudo -H pip3 install webcolors pyhull shapely
 
 echo; echo; echo;
 echo "Running psql commands with" 
@@ -128,7 +128,8 @@ CREATE TABLE library(---{{{
 ---}}}
 CREATE TABLE simulations ( ---{{{
     id serial PRIMARY KEY,
-    project text,
+    project int,
+    scenario_id int,
     iteration smallint,
     fireorig text,
     fireorigname text,

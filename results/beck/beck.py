@@ -44,7 +44,7 @@ class processDists:
 
     def plot_dcbe_dist(self):
 #        plt.clf()
-        query = "SELECT dcbe_time FROM simulations where project like '{}%' AND dcbe_time is not null".format(self.configs['GENERAL']['PROJECT_NAME'])
+        query = "SELECT dcbe_time FROM simulations where project like '{}%' AND dcbe_time is not null".format(self.configs['general']['project_id'])
         results = self.query(query)
         dcbe = [int(i[0]) for i in results]
         sns_plot = sns.distplot(dcbe)

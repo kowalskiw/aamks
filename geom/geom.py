@@ -68,7 +68,7 @@ class Geom():
 
             width=maxx-minx
             height=maxy-miny
-
+            print(width, height)
             animation_scale=round(min(1600/width,800/height)*0.95, 2) # 0.95 is canvas padding
             animation_translate=[ int(maxx-0.5*width), -int(maxy-0.5*height) ]
 
@@ -206,6 +206,8 @@ class Geom():
         (x,y) WELL slices on proper floors in order to calculate vent_from /
         vent_to properly. 
         '''
+
+        return
 
         add_wells={}
         for w in self.s.query("SELECT floor,global_type_id,height FROM aamks_geom WHERE type_sec in ('STAI','HALL')"):
