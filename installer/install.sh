@@ -31,6 +31,22 @@ AAMKS_PG_PASS='hulakula'
 sudo apt-get install postgresql python3-pip python3-numpy python3-networkx python3-psycopg2 gearman sendxmpp xdg-utils
 sudo -H pip3 install webcolors pyhull shapely
 
+# TODO
+# temp=`mktemp`
+# sudo cat /etc/apache2/envvars | grep -v AAMKS_ > $temp
+# echo "export AAMKS_DB_USER='$AAMKS_DB_USER'" >> $temp
+# echo "export AAMKS_DB_PASS='$AAMKS_DB_PASS'" >> $temp
+# echo "export AAMKS_DB_HOST='$AAMKS_DB_HOST'" >> $temp
+# echo "export AAMKS_LANG='$AAMKS_LANG'" >> $temp
+# echo "export AAMKS_NOTIFY='$AAMKS_NOTIFY'" >> $temp
+# echo "export AAMKS_NEW_STUDENT_FORM_URL='$AAMKS_NEW_STUDENT_FORM_URL'" >> $temp
+# echo "export AAMKS_NEW_STUDENT_SECRET='$AAMKS_NEW_STUDENT_SECRET'" >> $temp
+# echo "export AAMKS_ADM_SESSION_NAME='$AAMKS_ADM_SESSION_NAME'" >> $temp
+# sudo cp $temp /etc/apache2/envvars
+# rm $temp
+
+
+
 echo; echo; echo;
 echo "Running psql commands with" 
 echo "sudo -u postgres psql -c 'sql commands'"
