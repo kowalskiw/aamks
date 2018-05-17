@@ -43,7 +43,8 @@ class Worker:
         self.sim_floors = None
         self.start_time = time.time()
         self.floors = list()
-        os.chdir('/home/aamks')
+        os.chdir('/home/aamks_users')
+        self.working_dir = self.url.split('aamks_users/')[1]
 
     def _report_error(self, exception: Exception) -> logging:
         print('Error occurred, see aamks.log file for details.')
@@ -72,7 +73,8 @@ class Worker:
 
     def get_geom_and_cfast(self):
 
-        os.chdir(self.vars['conf']['WORKSPACE'])
+        os.chdir(self.working_dir)
+
 
         logging.basicConfig(filename='aamks.log', level=logging.INFO,
                             format='%(asctime)s %(levelname)s: %(message)s')
@@ -98,8 +100,8 @@ class Worker:
 
     def _create_workspace(self):
         try:
-            shutil.rmtree(self.vars['conf']['WORKSPACE'], ignore_errors=True)
-            os.makedirs(self.vars['conf']['WORKSPACE'])
+            shutil.rmtree(self.working_dir, ignore_errors=True)
+            os.makedirs(self.working_dir)
         except Exception as e:
             self._report_error(e)
 
@@ -209,7 +211,7 @@ class Worker:
                 break
 
 
-    def send_report(self, sim_id, project,floor, animation_data, psql_data ): # {{{
+    def send_report(self, sim_id, project,floor, psql_data ): # {{{
         '''
         Runs on a worker. Write /home/aamks/project/sim_id.json on each aRun
         completion. Then inform gearman server to scp to itself
@@ -226,7 +228,7 @@ class Worker:
             pass
         self.sim_id=sim_id
         self.floor=floor
-        self._write_animation(animation_data)
+        self._write_animation()
         self._write_report(psql_data)
     # }}}
     def _write_animation(self):# {{{
@@ -260,6 +262,7 @@ class Worker:
             j.write(report, json_file)
             Popen("gearman -h {} -f aOut '{} {} {} {}'".format(os.environ['AAMKS_SERVER'],
                                                            host, json_file, self.sim_id, num_floor), shell=True)
+            print("gearman -h {} -f aOut '{} {} {} {}'".format(os.environ['AAMKS_SERVER'], host, json_file, self.sim_id, num_floor) )
     # }}}
 
 
@@ -302,6 +305,7 @@ class Worker:
         self._write_animation()
         self._write_report('psql_connect')
         self._copy_animation_files()
+        #self.send_report(self.sim_id, self.config['general']['project_id'],)
 
     def test(self):
         self.get_config()
