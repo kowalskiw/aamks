@@ -63,6 +63,7 @@ try:
 # }}}
 
     try:
+        SendMessage(sys.argv)
         host=sys.argv[1]
         json_file=sys.argv[2]
         sim_id=sys.argv[3]

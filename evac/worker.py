@@ -260,9 +260,9 @@ class Worker:
             report['psql']=psql_data
             json_file = "report{}_{}.json".format(num_floor, self.sim_id)
             j.write(report, json_file)
-            Popen("gearman -h {} -f aOut '{} {} {} {}'".format(os.environ['AAMKS_SERVER'],
-                                                           host, json_file, self.sim_id, num_floor), shell=True)
-            print("gearman -h {} -f aOut '{} {} {} {}'".format(os.environ['AAMKS_SERVER'], host, json_file, self.sim_id, num_floor) )
+            Popen("gearman -h {} -f aOut '{}, {} {} {}'".format(os.environ['AAMKS_SERVER'],
+                                                           host, ':/home/aamks_users/'+self.working_dir+'/'+json_file, self.sim_id, num_floor), shell=True)
+            print("gearman -h {} -f aOut '{} {} {} {}'".format(os.environ['AAMKS_SERVER'], host, self.working_dir+json_file, self.sim_id, num_floor) )
     # }}}
 
 
