@@ -23,10 +23,6 @@ from include import SendMessage
 
 #SIMULATION_TYPE = 'NO_CFAST'
 SIMULATION_TYPE = 1
-SendMessage("Start simulations")
-
-
-
 
 class Worker:
 
@@ -43,6 +39,7 @@ class Worker:
         self.sim_floors = None
         self.start_time = time.time()
         self.floors = list()
+        self.host_name = os.uname()[1]
         os.chdir('/home/aamks_users')
         self.working_dir = self.url.split('aamks_users/')[1]
 
@@ -211,7 +208,7 @@ class Worker:
                 break
 
 
-    def send_report(self, sim_id, project,floor, psql_data ): # {{{
+    def send_report(self): # {{{
         '''
         Runs on a worker. Write /home/aamks/project/sim_id.json on each aRun
         completion. Then inform gearman server to scp to itself
@@ -220,18 +217,13 @@ class Worker:
         Gearman server will psql insert and will scp the worker's animation to
         itself.
         '''
+        self._write_animation_zips()
+        self._write_meta()
 
-        self.project_dir="/home/aamks/{}".format(project)
-        try:
-            os.makedirs(self.project_dir, exist_ok=True)
-        except:
-            pass
-        self.sim_id=sim_id
-        self.floor=floor
-        self._write_animation()
-        self._write_report(psql_data)
+        Popen("gearman -h {} -f aOut '{} {} {}'".format(os.environ['AAMKS_SERVER'], self.host_name, '/home/aamks_users/'+self.working_dir+'/'+self.meta_file, self.sim_id), shell=True)
+        print("gearman -h {} -f aOut '{} {} {}'".format(os.environ['AAMKS_SERVER'], self.host_name, '/home/aamks_users/'+self.working_dir+'/'+self.meta_file, self.sim_id) )
     # }}}
-    def _write_animation(self):# {{{
+    def _write_animation_zips(self):# {{{
         '''
         Raw data comes as an argument. We create /home/aamks/1.anim.zip
         with anim.json inside.
@@ -249,20 +241,22 @@ class Worker:
             floor += 1
 
     # }}}
-    def _write_report(self, psql_data):# {{{
+    def _write_meta(self):# {{{
+        j=Json()
+        report = OrderedDict()
+        report['worker'] = self.host_name
+        report['sim_id'] = self.sim_id
+        report['path_to_project'] = '/home/aamks_users/'+self.working_dir.split('workers')[0]
+        report['fire_origin'] = self.vars['conf']['ROOM_OF_FIRE_ORIGIN']
+        report['highlight_geom'] = None
+
         for num_floor in range(len(self.floors)):
-            j=Json()
-            host = os.uname()[1]
-            report = OrderedDict()
-            report['worker'] = host
-            report['sim_id'] = self.sim_id
-            report['animation'] = "{}_{}.anim.zip".format(num_floor, self.sim_id)
-            report['psql']=psql_data
-            json_file = "report{}_{}.json".format(num_floor, self.sim_id)
-            j.write(report, json_file)
-            Popen("gearman -h {} -f aOut '{}, {} {} {}'".format(os.environ['AAMKS_SERVER'],
-                                                           host, ':/home/aamks_users/'+self.working_dir+'/'+json_file, self.sim_id, num_floor), shell=True)
-            print("gearman -h {} -f aOut '{} {} {} {}'".format(os.environ['AAMKS_SERVER'], host, self.working_dir+json_file, self.sim_id, num_floor) )
+            report['animation'] = "f{}_s{}.anim.zip".format(num_floor, self.sim_id)
+            report['floor'] = num_floor
+
+        report['psql']='psql_data'
+        self.meta_file = "meta_{}.json".format(self.sim_id)
+        j.write(report, self.meta_file)
     # }}}
 
 
@@ -270,6 +264,7 @@ class Worker:
 
         self.jsonOut = OrderedDict()
         self.jsonOut['sort_id'] = int(self.sim_id)
+        self.jsonOut['project_path'] = int(self.sim_id)
         self.jsonOut['title'] = "sim{}, f{}".format(self.sim_id, floor)
         self.jsonOut['floor'] = floor
         self.jsonOut['fire_origin'] = self.vars['conf']['ROOM_OF_FIRE_ORIGIN']
@@ -302,9 +297,8 @@ class Worker:
         self.run_cfast_simulations()
         self.prepare_simulations()
         self.do_simulation()
-        self._write_animation()
-        self._write_report('psql_connect')
-        self._copy_animation_files()
+        self.send_report()
+        #self._copy_animation_files()
         #self.send_report(self.sim_id, self.config['general']['project_id'],)
 
     def test(self):
@@ -313,17 +307,11 @@ class Worker:
         self.create_geom_database()
         self.prepare_simulations()
         self.do_simulation()
-        self._write_animation()
-        self._write_report('psql_connect')
-        self._copy_animation_files()
+        self.send_report()
+        #self._copy_animation_files()
 
 
-try:
-    w = Worker()
-except Exception as e:
-    SendMessage(e)
-else:
-    SendMessage("Alles in grunem bereisch")
+w = Worker()
 
 if SIMULATION_TYPE == 'NO_CFAST':
     try:
@@ -331,11 +319,11 @@ if SIMULATION_TYPE == 'NO_CFAST':
     except Exception as e:
         SendMessage(e)
     else:
-        SendMessage("Alles in grunem bereisch")
+        SendMessage("Worker: Alles in grunem bereisch")
 else:
     try:
         w.main()
     except Exception as e:
         SendMessage(e)
     else:
-        SendMessage("Alles in grunem bereisch")
+        SendMessage("Worker: Alles in grunem bereisch")
