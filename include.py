@@ -53,7 +53,7 @@ class SimIterations():# {{{
             self.r.append(_max)
         except:
             # If a new project
-            self.r=[1, self.how_many+1]
+            self.r=[1, int(self.how_many)+1]
         return self.r
         
 # }}}

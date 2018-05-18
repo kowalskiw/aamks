@@ -18,7 +18,6 @@ class OnInit():
 
         if len(sys.argv) > 1:
             os.environ["AAMKS_PROJECT"]=sys.argv[1]
-        self._kill_http_server()
         self.json=Json()
         self.conf=self.json.read("{}/conf_aamks.json".format(os.environ['AAMKS_PROJECT']))
         self.p=Psql()
@@ -27,17 +26,6 @@ class OnInit():
         self._setup_vis()
         self._setup_anim_master()
         self._info()
-        self._http_serve()
-# }}}
-    def _kill_http_server(self):# {{{
-        ''' 
-        Python serves vis data at localhost:8123. When we change aamks project,
-        we need to chdir and serve vis data from there, so we need to kill the old
-        python webserver. It may need some time to release the resources, so we
-        kill it early and then serve again as late as possible -- onEnd(). 
-        '''
-
-        Popen('pkill -9 -f "^python3 -m http.server 8123"', shell=True)
 # }}}
     def _clear_sqlite(self):# {{{
         try:
@@ -66,7 +54,7 @@ class OnInit():
             r.append(r[0]+how_many)
         except:
             # If a new project
-            r=[1, how_many+1]
+            r=[1, int(how_many)+1]
         return r
 # }}}
     def _setup_simulations(self):# {{{
@@ -146,15 +134,6 @@ class OnInit():
         Popen('env | grep AAMKS', shell=True)
         print("Project id:", self.conf['general']['project_id'])
 # }}}
-    def _http_serve(self):# {{{
-        ''' 
-        We also serve animations via localhost:8123. 
-        2>/dev/null ignores "OSError: [Errno 98] Address already in use"
-        '''
-
-        Popen('cd /home/aamks_users/; python3 -m http.server 8123 2>/dev/null 1>/dev/null &', shell=True)
-# }}}
-
 class OnEnd():
     def __init__(self):# {{{
         ''' Stuff that happens at the end of the project '''
