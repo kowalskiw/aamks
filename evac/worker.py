@@ -249,7 +249,9 @@ class Worker:
         report['path_to_project'] = '/home/aamks_users/'+self.working_dir.split('workers')[0]
         report['fire_origin'] = self.vars['conf']['ROOM_OF_FIRE_ORIGIN']
         report['highlight_geom'] = None
-
+        for i in self.floors:
+            report['fed'] = i.fed
+            report['rset'] = int(i.rset)
         for num_floor in range(len(self.floors)):
             report['animation'] = "f{}_s{}.anim.zip".format(num_floor, self.sim_id)
             report['floor'] = num_floor
@@ -258,36 +260,6 @@ class Worker:
         self.meta_file = "meta_{}.json".format(self.sim_id)
         j.write(report, self.meta_file)
     # }}}
-
-
-    def _write_animation_file(self, anim_json, floor):# {{{
-
-        self.jsonOut = OrderedDict()
-        self.jsonOut['sort_id'] = int(self.sim_id)
-        self.jsonOut['project_path'] = int(self.sim_id)
-        self.jsonOut['title'] = "sim{}, f{}".format(self.sim_id, floor)
-        self.jsonOut['floor'] = floor
-        self.jsonOut['fire_origin'] = self.vars['conf']['ROOM_OF_FIRE_ORIGIN']
-        self.jsonOut['highlight_geom'] = None
-        self.jsonOut['anim']="{}/f{}_s{}.anim.zip".format(self.sim_id, floor, self.sim_id)
-
-        anim_json.append(self.jsonOut)
-
-        return anim_json
-
-    # }}}
-
-    def _copy_animation_files(self):
-
-        json = Json()
-        anim_json = json.read('{}/workers/vis/anims.json'.format(os.environ['AAMKS_PROJECT']))
-
-        for i in self.vars['conf']['FLOORS_DATA'].keys():
-            shutil.copy('f{}_s{}.anim.zip'.format(i, self.sim_id), '{}/{}/{}'.format(os.environ['AAMKS_PROJECT'], 'workers', self.sim_id))
-            anim_json = self._write_animation_file(anim_json, i)
-
-        json.write(anim_json, '{}/workers/vis/anims.json'.format(os.environ['AAMKS_PROJECT']))
-
 
     def main(self):
         self.get_config()
@@ -298,8 +270,6 @@ class Worker:
         self.prepare_simulations()
         self.do_simulation()
         self.send_report()
-        #self._copy_animation_files()
-        #self.send_report(self.sim_id, self.config['general']['project_id'],)
 
     def test(self):
         self.get_config()
@@ -308,7 +278,6 @@ class Worker:
         self.prepare_simulations()
         self.do_simulation()
         self.send_report()
-        #self._copy_animation_files()
 
 
 w = Worker()
