@@ -249,14 +249,16 @@ class Worker:
         report['path_to_project'] = '/home/aamks_users/'+self.working_dir.split('workers')[0]
         report['fire_origin'] = self.vars['conf']['ROOM_OF_FIRE_ORIGIN']
         report['highlight_geom'] = None
+        report['psql'] = dict()
+        report['psql']['fed'] = dict()
+        report['psql']['rset'] = dict()
         for i in self.floors:
-            report['fed'] = i.fed
-            report['rset'] = int(i.rset)
+            report['psql']['fed'][i.floor] = i.fed
+            report['psql']['rset'][i.floor] = int(i.rset)
         for num_floor in range(len(self.floors)):
             report['animation'] = "f{}_s{}.anim.zip".format(num_floor, self.sim_id)
             report['floor'] = num_floor
 
-        report['psql']='psql_data'
         self.meta_file = "meta_{}.json".format(self.sim_id)
         j.write(report, self.meta_file)
     # }}}
