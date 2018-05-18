@@ -27,7 +27,7 @@
             />
         </div>
         <div class="project-controls">
-            <div class="add-button" (click)="addRiskScenario(project.id)">
+            <div class="add-button" (click)="setCurrentProject(project.id); addRiskScenario(project.id)">
                 <label>Add Risk Scenario</label>
                 <i class="material-icons">add_box</i>
             </div>

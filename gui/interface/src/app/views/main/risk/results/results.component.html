@@ -29,7 +29,7 @@
                     </select>
                 </div></td>
             </tr>
-            <tr><td>Labels size        </td><td><div id="size-labels"><input type="text" size="2" name="labels-size" id="labels-size" value="20"></div></td>
+            <tr><td>Labels size        </td><td><div id="size-labels"><input type="text" size="2" name="labels-size" id="labels-size" value="20" [(ngModel)]="labelsSize" (change)="resetCanvas()"></div></td>
             <tr><td>Walls size         </td><td><div id="size-walls"><input type="text" size="2" name="walls-size" id="walls-size" [(ngModel)]="wallsSize"></div></td>
             <tr><td>Doors size         </td><td><div id="size-doors"><input type="text" size="2" name="doors-size" id="doors-size" [(ngModel)]="doorsSize"></div></td>
             <tr><td>Balls size         </td><td><div id="size-balls"><input type="text" size="2" name="balls-size" id="balls-size" [(ngModel)]="ballsSize"></div></td>
