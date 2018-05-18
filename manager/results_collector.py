@@ -6,6 +6,7 @@ from include import Json
 from include import Sqlite
 from include import SendMessage
 from collections import OrderedDict
+from include import Psql
 import traceback
 
 try:
@@ -67,6 +68,10 @@ try:
             z.append(self.jsonOut)
             self.json.write(z, anims_master)
 # }}}
+        def psql_report(self):
+            p = Psql()
+            x = p.query('SELECT max(iteration)+1 FROM simulations WHERE project=%s', (self.meta['project_id'],))
+
 
     try:
         host=sys.argv[1]
