@@ -220,6 +220,9 @@ class SmokeQuery:
         logging.debug('Query visibility at time: {} on position: {}'.format(time, position))
 
         hgt = conditions['HGT']
+        if hgt == None:
+            return 0
+
         if hgt > self.layer_height:
             return conditions['LLOD']
         else:
@@ -229,6 +232,8 @@ class SmokeQuery:
         logging.debug('Query FED at time: {} on position: {}'.format(time, position))
         conditions = self.get_conditions(position)
         hgt = conditions['HGT']
+        if hgt == None:
+            return 0.
 
         if hgt > self.layer_height:
             layer = 'U'
