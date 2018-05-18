@@ -165,7 +165,7 @@ CREATE TABLE simulations ( ---{{{
     e text,
     radfrac text,
     fed text,
-    wcbe smallint,
+    wcbe text,
     host text,
     dcbe_time integer,
     dcbe_compa text,

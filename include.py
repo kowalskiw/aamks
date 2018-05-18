@@ -3,6 +3,7 @@ import os
 import sys
 import sqlite3
 import psycopg2
+import psycopg2.extras
 import inspect
 import json
 from subprocess import Popen,PIPE
@@ -53,7 +54,7 @@ class SimIterations():# {{{
             self.r.append(_max)
         except:
             # If a new project
-            self.r=[1, int(self.how_many)+1]
+            self.r=[1, self.how_many+1]
         return self.r
         
 # }}}

@@ -28,6 +28,7 @@ try:
             self.json=Json()
             self._fetch_meta()
             self._animation()
+            self.psql_report()
 # }}}
         def _fetch_meta(self):# {{{
             SendMessage("self.meta copied")
@@ -70,7 +71,9 @@ try:
 # }}}
         def psql_report(self):
             p = Psql()
-            x = p.query('SELECT max(iteration)+1 FROM simulations WHERE project=%s', (self.meta['project_id'],))
+            fed=json.dumps(self.meta['psql']['fed'])
+            rset = json.dumps(self.meta['psql']['rset'])
+            p.query("UPDATE simulations SET fed = '{}', wcbe='{}' WHERE project=%s AND iteration=%s".format(fed, rset), (self.meta['project_id'], self.meta['sim_id']))
 
 
     try:

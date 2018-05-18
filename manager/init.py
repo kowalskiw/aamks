@@ -130,9 +130,9 @@ class OnInit():
 ''')
 # }}}
     def _info(self):# {{{
-        print("Your AAMKS variables can be adjusted in your ~/.bashrc")
-        Popen('env | grep AAMKS', shell=True)
-        print("Project id:", self.conf['general']['project_id'])
+        #print("Your AAMKS variables can be adjusted in your ~/.bashrc")
+        #Popen('env | grep AAMKS', shell=True)
+        print("Running project id:", self.conf['general']['project_id'])
 # }}}
 class OnEnd():
     def __init__(self):# {{{
@@ -166,7 +166,7 @@ class OnEnd():
         for i in range(*si.get()):
             worker="{}/workers/{}".format(os.environ['AAMKS_PROJECT'],i)
             worker = worker.replace("/home","")
-            gearman="gearman -f aRun 'http://{}{} &'".format(os.environ['AAMKS_SERVER'], worker)
+            gearman="gearman -b -f aRun 'http://{}{}'".format(os.environ['AAMKS_SERVER'], worker)
             #print("cd /usr/local/aamks/evac/; python3 worker.py http://{}:8123/workers/{}".format(os.environ['AAMKS_SERVER'],i))
             print(gearman)
             os.system(gearman)
