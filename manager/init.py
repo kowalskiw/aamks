@@ -54,7 +54,7 @@ class OnInit():
             r.append(r[0]+how_many)
         except:
             # If a new project
-            r=[1, int(how_many)+1]
+            r=[1, how_many+1]
         return r
 # }}}
     def _setup_simulations(self):# {{{
