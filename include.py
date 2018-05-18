@@ -31,6 +31,12 @@ class Dump():# {{{
         else:
             print(struct)
 # }}}
+class Colors():# {{{
+    def hex2rgb(self,color):
+        rgb = color[1:]
+        r, g, b = rgb[0:2], rgb[2:4], rgb[4:6]
+        return tuple([float(int(v, 16)) / 255 for v in (r, g, b)])
+# }}}
 class SimIterations():# {{{
     ''' 
     For a given project we may run simulation 0 to 999. Then we may wish to run
@@ -59,7 +65,17 @@ class SimIterations():# {{{
         
 # }}}
 class Sqlite(): # {{{
-    def __init__(self, handle):
+
+    def __init__(self, handle, must_exist=0):
+        '''
+        must_exist=0: we are creating the database
+        must_exist=1: Exception if there's no such file
+        '''
+
+        if must_exist == 1:
+            assert os.path.exists(handle), "Expected to find an existing sqlite file at: {}.\nCWD: {}".format(handle, os.getcwd())
+
+
         self.SQLITE = sqlite3.connect(handle)
         self.SQLITE.row_factory=self._sql_assoc
         self.sqlitedb=self.SQLITE.cursor()
@@ -96,7 +112,7 @@ class Sqlite(): # {{{
     def dumpall(self):
         ''' Remember to add all needed sqlite tables here '''
         print("dump() from caller: {}, {}".format(inspect.stack()[1][1], inspect.stack()[1][3]))
-        for i in ('aamks_geom', 'floors', 'obstacles', 'id2compa', 'door_intersections', 'graph', 'tessellation'):
+        for i in ('aamks_geom', 'staircaser', 'floors', 'obstacles', 'tessellation'):
             try:
                 print("\n=======================")
                 print("table:", i)
@@ -148,7 +164,7 @@ class Json(): # {{{
         except:
             raise Exception("\n\nMissing or invalid json: {}.".format(path)) 
 
-    def write(self, data, path, pretty=1): 
+    def write(self, data, path, pretty=0): 
         try:
             if pretty==1:
                 pretty=json.dumps(data, indent=4)

@@ -4,6 +4,7 @@ from manager.init import OnInit, OnEnd
 from geom.geom import Geom
 from geom.path import Path
 from fire.cfast_tessellate import CfastTessellate
+#from fire.smoke_query import SmokeQuery
 from montecarlo.cfast_mcarlo import CfastMcarlo
 from montecarlo.evac_mcarlo import EvacMcarlo
 from include import SendMessage
@@ -14,6 +15,8 @@ Path() # TODO: seems like we should call it elsewhere
 CfastTessellate()
 CfastMcarlo()
 EvacMcarlo()
+#z=SmokeQuery("0")
+#z.get_final_vars() 
 OnEnd()
 
 # ssh mimooh@duch

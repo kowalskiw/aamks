@@ -59,7 +59,7 @@ class CfastMcarlo():
         return outdoor_temp
 # }}}
     def _draw_fire(self):# {{{
-        origin_in_room=binomial(1,self.conf['settings']['origin_of_fire']['fire_starts_in_room_probability'])
+        origin_in_room=binomial(1,self.conf['settings']['fire_starts_in_room_probability'])
         
         self.all_corridors_and_halls=[z['name'] for z in self.s.query("SELECT name FROM aamks_geom WHERE type_pri='COMPA' and type_sec in('COR','HALL') ORDER BY name") ]
         self.all_rooms=[z['name'] for z in self.s.query("SELECT name FROM aamks_geom WHERE type_sec='ROOM' ORDER BY name") ]

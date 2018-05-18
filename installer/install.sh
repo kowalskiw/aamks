@@ -13,11 +13,10 @@
 
 # CONFIGURATION
 
+AAMKS_SERVER=127.0.0.1
 AAMKS_PATH='/usr/local/aamks'
 AAMKS_NOTIFY='mimooh@jabb.im, krasuski@jabb.im'
 AAMKS_TESTING=0
-AAMKS_SERVER=127.0.0.1
-AAMKS_USE_GEARMAN=1
 AAMKS_PG_PASS='hulakula' 
 
 # END OF CONFIGURATION
@@ -28,22 +27,18 @@ AAMKS_PG_PASS='hulakula'
 	exit;
 } 
 
-sudo apt-get install postgresql python3-pip python3-numpy python3-networkx python3-psycopg2 gearman sendxmpp xdg-utils
-sudo -H pip3 install webcolors pyhull shapely
+sudo apt-get install postgresql python3-pip python3-networkx python3-psycopg2 gearman sendxmpp xdg-utils
+sudo -H pip3 install webcolors pyhull shapely scipy numpy 
 
-# TODO
-# temp=`mktemp`
-# sudo cat /etc/apache2/envvars | grep -v AAMKS_ > $temp
-# echo "export AAMKS_DB_USER='$AAMKS_DB_USER'" >> $temp
-# echo "export AAMKS_DB_PASS='$AAMKS_DB_PASS'" >> $temp
-# echo "export AAMKS_DB_HOST='$AAMKS_DB_HOST'" >> $temp
-# echo "export AAMKS_LANG='$AAMKS_LANG'" >> $temp
-# echo "export AAMKS_NOTIFY='$AAMKS_NOTIFY'" >> $temp
-# echo "export AAMKS_NEW_STUDENT_FORM_URL='$AAMKS_NEW_STUDENT_FORM_URL'" >> $temp
-# echo "export AAMKS_NEW_STUDENT_SECRET='$AAMKS_NEW_STUDENT_SECRET'" >> $temp
-# echo "export AAMKS_ADM_SESSION_NAME='$AAMKS_ADM_SESSION_NAME'" >> $temp
-# sudo cp $temp /etc/apache2/envvars
-# rm $temp
+temp=`mktemp`
+sudo cat /etc/apache2/envvars | grep -v AAMKS_ > $temp
+echo "export AAMKS_SERVER='$AAMKS_SERVER'" >> $temp
+echo "export AAMKS_PATH='$AAMKS_PATH'" >> $temp
+echo "export AAMKS_NOTIFY='$AAMKS_NOTIFY'" >> $temp
+echo "export AAMKS_TESTING='$AAMKS_TESTING'" >> $temp
+echo "export AAMKS_PG_PASS='$AAMKS_DB_PASS'" >> $temp
+sudo cp $temp /etc/apache2/envvars
+rm $temp
 
 
 
