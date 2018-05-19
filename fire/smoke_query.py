@@ -217,7 +217,7 @@ class SmokeQuery:
         if hgt == None:
             return 0
 
-        if hgt > self.config['layer_height']:
+        if hgt > self.config['LAYER_HEIGHT']:
             return conditions['LLOD']
         else:
             return conditions['ULOD']
@@ -229,7 +229,7 @@ class SmokeQuery:
         if hgt == None:
             return 0.
 
-        if hgt > self.config['layer_height']:
+        if hgt > self.config['LAYER_HEIGHT']:
             layer = 'U'
         else:
             layer = 'L'

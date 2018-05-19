@@ -183,13 +183,13 @@ class Worker:
         time_frame = 10
         floor = 0
         try:
-            master_query = SmokeQuery(floor='0', vars=self.config)
+            master_query = SmokeQuery(floor='0')
         except Exception as e:
             self._report_error(e)
 
         for i in self.floors:
             try:
-                i.smoke_query = SmokeQuery(floor=str(floor), vars=self.config)
+                i.smoke_query = SmokeQuery(floor=str(floor))
             except Exception as e:
                 self._report_error(e)
             else:
