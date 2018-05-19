@@ -290,11 +290,24 @@ class SmokeQuery:
         # min(HGT_COMPA)
         finals['min_hgt_compa']=self.sf.query("SELECT MIN(value) FROM finals WHERE param='HGT'")[0]['MIN(value)']
 
-        # min(ULOD_COR)
-        finals['min_ulod_cor']=self.sf.query("SELECT MIN(value) FROM finals WHERE compa_type='C' AND param='ULOD'")[0]['MIN(value)']
+        # min(ULT_COMPA)
+        finals['max_temp_compa']=self.sf.query("SELECT MAX(value) FROM finals WHERE param='ULT'")[0]['MAX(value)']
 
-        # min(ULOD_COMPA) 
-        finals['min_ulod_compa']=self.sf.query("SELECT MIN(value) FROM finals WHERE param='ULOD'")[0]['MIN(value)']
+        c_const = 5
+        # min(ULOD_COR)
+        ul_od_cor = self.sf.query("SELECT MAX(value) FROM finals WHERE compa_type='C' AND param='ULOD'")[0]['MAX(value)']
+        if ul_od_cor == 0:
+            finals['min_vis_cor'] = 30
+        else:
+            finals['min_vis_cor'] = c_const / (ul_od_cor * 2.303)
+
+
+        # min(ULOD_COMPA)
+        ul_od_compa = self.sf.query("SELECT MAX(value) FROM finals WHERE param='ULOD'")[0]['MAX(value)']
+        if ul_od_compa == 0:
+            finals['min_vis_compa'] = 30
+        else:
+            finals['min_vis_compa'] = c_const /(ul_od_compa * 2.303)
 
         return finals
 

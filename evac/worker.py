@@ -42,6 +42,7 @@ class Worker:
         self.host_name = os.uname()[1]
         os.chdir('/home/aamks_users')
         self.working_dir = self.url.split('aamks_users/')[1]
+        self.cross_building_results = None
 
     def _report_error(self, exception: Exception) -> logging:
         print('Error occurred, see aamks.log file for details.')
@@ -207,6 +208,7 @@ class Worker:
             if time_frame > 80:
                 break
 
+        self.cross_building_results = master_query.get_final_vars()
 
     def send_report(self): # {{{
         '''
@@ -253,6 +255,7 @@ class Worker:
         report['psql'] = dict()
         report['psql']['fed'] = dict()
         report['psql']['rset'] = dict()
+        report['psql']['cross_building_results'] = self.cross_building_results
         for i in self.floors:
             report['psql']['fed'][i.floor] = i.fed
             report['psql']['rset'][i.floor] = int(i.rset)
