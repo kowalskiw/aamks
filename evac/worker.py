@@ -3,6 +3,9 @@
 import os
 import shutil
 import sys
+import time
+from numpy import array
+from numpy import prod
 
 
 from evac.evacuee import Evacuee
@@ -27,6 +30,7 @@ SIMULATION_TYPE = 1
 class Worker:
 
     def __init__(self):
+        self.start_time = time.time()
         self.url = sys.argv[1]
         self.vars = OrderedDict()
         self.results = dict()
@@ -180,6 +184,7 @@ class Worker:
 
     def do_simulation(self):
         logging.info('Starting simulaitons')
+        master_query = None
 
         time_frame = 10
         floor = 0
@@ -190,7 +195,8 @@ class Worker:
 
         for i in self.floors:
             try:
-                i.smoke_query = SmokeQuery(floor=str(floor))
+                #i.smoke_query = SmokeQuery(floor=str(floor))
+                i.smoke_query = master_query
             except Exception as e:
                 self._report_error(e)
             else:
@@ -199,13 +205,17 @@ class Worker:
         while 1:
             if master_query.cfast_has_time(time_frame) == 1:
                 logging.info('Simulation time: {}'.format(time_frame))
+                l = []
                 for i in self.floors:
                     i.read_cfast_record(time_frame)
                     i.do_simulation(time_frame)
+                    l.append(i.rset)
                 time_frame += 10
             else:
                 time.sleep(1)
-            if time_frame > 80:
+            if time_frame > 620:
+                break
+            if prod(array(l)) > 0:
                 break
 
         self.cross_building_results = master_query.get_final_vars()
@@ -223,7 +233,7 @@ class Worker:
         self._write_meta()
 
         Popen("gearman -h {} -f aOut '{} {} {}'".format(os.environ['AAMKS_SERVER'], self.host_name, '/home/aamks_users/'+self.working_dir+'/'+self.meta_file, self.sim_id), shell=True)
-        print("gearman -h {} -f aOut '{} {} {}'".format(os.environ['AAMKS_SERVER'], self.host_name, '/home/aamks_users/'+self.working_dir+'/'+self.meta_file, self.sim_id) )
+        #print("gearman -h {} -f aOut '{} {} {}'".format(os.environ['AAMKS_SERVER'], self.host_name, '/home/aamks_users/'+self.working_dir+'/'+self.meta_file, self.sim_id) )
     # }}}
     def _write_animation_zips(self):# {{{
         '''
@@ -255,6 +265,7 @@ class Worker:
         report['psql'] = dict()
         report['psql']['fed'] = dict()
         report['psql']['rset'] = dict()
+        report['psql']['runtime'] = int(time.time() - self.start_time)
         report['psql']['cross_building_results'] = self.cross_building_results
         for i in self.floors:
             report['psql']['fed'][i.floor] = i.fed

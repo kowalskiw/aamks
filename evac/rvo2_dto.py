@@ -181,7 +181,8 @@ class EvacEnv:
         return json_content
 
     def do_simulation(self, time):
-        for step in range(int(time/self.config['TIME_STEP'])):
+        time_range = int(time/self.config['TIME_STEP'])
+        for step in range(time_range - 100, time_range):
             self.sim.doStep()
             logging.debug('Simulation step: {}'.format(step))
             self.update_agents_position()

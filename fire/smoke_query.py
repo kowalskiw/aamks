@@ -164,9 +164,6 @@ class SmokeQuery:
         Application needs to call us prior to massive queries for conditions at (x,y).
         '''
 
-        # if self._cfast_has_time(time) == 0:   18.May/mimooh: worker.py has already checked cfast_has_time() 
-        #     return 0
-
         for letter in ['n', 's', 'w']:
             f = 'cfast_{}.csv'.format(letter)
             with open(f, 'r') as csvfile:
@@ -244,33 +241,6 @@ class SmokeQuery:
         return fed_total
 # }}}
 
-    def read_cfast_record(self, time):# {{{
-        ''' 
-        We had parsed headers separately. Now we only parse numbers from n,s,w files. 
-        Application needs to call us prior to massive queries for conditions at (x,y).
-        '''
-
-        for letter in ['n', 's', 'w']:
-            f = 'cfast_{}.csv'.format(letter)
-            with open(f, 'r') as csvfile:
-                reader = csv.reader(csvfile, delimiter=',')
-                for x in range(4):
-                    next(reader)
-                for row in reader:
-                    if int(float(row[0])) == time:
-                        needed_record=[float(j) for j in row]
-                        needed_record[0]=int(float(row[0]))
-                        break
-
-            for compa in self.all_compas:
-                self._compa_conditions[compa]['TIME']=needed_record[0]
-            self._compa_conditions['outside']['TIME']=needed_record[0]
-
-            for m in range(len(needed_record)):
-                if self._headers[letter]['params'][m] in self.relevant_params and self._headers[letter]['geoms'][m] in self.all_compas:
-                    self._compa_conditions[self._headers[letter]['geoms'][m]][self._headers[letter]['params'][m]] = needed_record[m]
-        return 1
-# }}}
     def get_final_vars(self):# {{{
         '''
         The app should call us after CFAST produced all output. These are the
