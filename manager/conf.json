@@ -3,7 +3,7 @@
 
     "enabled_networks": {
         "localhost": 0,
-        "network_208": 1,
+        "network_208": 4,
         "network_003": 0,
         "network_tsz": 0,
         "network_zil": 0
