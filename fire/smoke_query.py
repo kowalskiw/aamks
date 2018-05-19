@@ -252,7 +252,11 @@ class SmokeQuery:
         finals=OrderedDict()
 
         # min(time) for HGT_COR < 1.8
-        finals['min_time']=self.sf.query("SELECT MIN(time) FROM finals WHERE compa_type='C' AND param='HGT' AND value < 1.8")[0]['MIN(time)']
+        dcbe = self.sf.query("SELECT MIN(time) FROM finals WHERE compa_type='C' AND param='HGT' AND value < 1.8")[0]['MIN(time)']
+        if dcbe == None:
+            finals['dcbe'] = 9999
+        else:
+            finals['dcbe'] = dcbe
 
         # min(HGT_COR) 
         finals['min_hgt_cor']=self.sf.query("SELECT MIN(value) FROM finals WHERE compa_type='C' AND param='HGT'")[0]['MIN(value)']
