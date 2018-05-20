@@ -8,6 +8,7 @@ import { BuildingCharacteristicComponent } from './views/main/risk/building-char
 import { BuildingInfrastructureComponent } from './views/main/risk/building-infrastructure/building-infrastructure.component';
 import { SettingsComponent } from './views/main/risk/settings/settings.component';
 import { ResultsComponent } from './views/main/risk/results/results.component';
+import { DistributionsComponent } from './views/main/risk/results/distributions/distributions.component';
 
 const routes: Routes = [
   {
@@ -31,8 +32,12 @@ const routes: Routes = [
     component: SettingsComponent
   },
   {
-    path: 'risk/results',
+    path: 'risk/results/visualization',
     component: ResultsComponent
+  },
+  {
+    path: 'risk/results/distributions',
+    component: DistributionsComponent
   },
 ];
 

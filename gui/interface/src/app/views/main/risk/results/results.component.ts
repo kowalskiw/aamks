@@ -89,7 +89,6 @@ export class ResultsComponent implements OnInit {
     // Initializing events
     // onMouseDrag
     this.project.view.onMouseDrag = (event) => {
-
       let offset = new Point(this.project.view.center.x - event.delta.x, this.project.view.center.y - event.delta.y)
       this.project.view.center = offset;
       
@@ -167,6 +166,11 @@ export class ResultsComponent implements OnInit {
     this.lerpFrame = 0;
     this.sliderPos = 0;
     this.resetCanvas();
+  }
+
+  public rewind(event?: any) {
+    console.log(event);
+    console.log(event.clientX - event.target.offsetLeft);
   }
 
   /**

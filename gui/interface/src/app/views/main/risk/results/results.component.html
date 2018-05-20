@@ -3,7 +3,7 @@
     <i class="material-icons" *ngIf="animationIsRunning == 0" (click)="play()">play_arrow</i>
     <i class="material-icons" *ngIf="animationIsRunning == 1" (click)="pause()">pause</i>
     <i class="material-icons" (click)="stop()">stop</i>
-    <div class="progress">
+    <div class="progress" (click)="rewind($event)">
         <div class="progress-bar" [style.width.%]="sliderPos"></div>
     </div>
 </div>

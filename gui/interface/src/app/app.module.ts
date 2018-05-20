@@ -66,6 +66,7 @@ import { SettingsComponent } from './views/main/risk/settings/settings.component
 import { GeneralRiskComponent } from './views/main/risk/general-risk/general-risk.component';
 import { BuildingInfrastructureComponent } from './views/main/risk/building-infrastructure/building-infrastructure.component';
 import { JsonRiskService } from './services/json-risk/json-risk.service';
+import { DistributionsComponent } from './views/main/risk/results/distributions/distributions.component';
 
 
 @NgModule({
@@ -89,6 +90,7 @@ import { JsonRiskService } from './services/json-risk/json-risk.service';
     SettingsComponent,
     GeneralRiskComponent,
     BuildingInfrastructureComponent,
+    DistributionsComponent,
   ],
   imports: [
     BrowserModule,
