@@ -15,6 +15,7 @@ import shutil
 from event_tree_en import EventTreeFED
 from event_tree_en import EventTreeSteel
 import scipy.stats as stat
+import collections
 
 
 class processDists:
@@ -44,7 +45,7 @@ class processDists:
 
     def plot_dcbe_dist(self):
 #        plt.clf()
-        query = "SELECT dcbe_time FROM simulations where project like '{}%' AND dcbe_time is not null".format(self.configs['general']['project_id'])
+        query = "SELECT dcbe_time FROM simulations where project = {} AND dcbe_time is not null".format(self.configs['general']['project_id'])
         results = self.query(query)
         dcbe = [int(i[0]) for i in results]
         sns_plot = sns.distplot(dcbe)
@@ -54,10 +55,14 @@ class processDists:
         plt.clf()
 
     def plot_wcbe_dist(self):
-        query = "SELECT wcbe FROM simulations where project like '{}%' AND dcbe_time is not null".format(self.configs['GENERAL']['PROJECT_NAME'])
+        query = "SELECT wcbe FROM simulations where project = {} AND dcbe_time is not null".format(self.configs['general']['project_id'])
         results = self.query(query)
-        dcbe = [int(i[0]) for i in results]
-        sns_plot = sns.distplot(dcbe)
+        wcbe = list()
+        dcbe = [json.loads(i[0]) for i in results]
+        for i in dcbe:
+            for value in i.values():
+                wcbe.append(value)
+        sns_plot = sns.distplot(wcbe)
 #        plt.xlabel('WCBE [s]')
 #        plt.ylabel('Prawdopodobieństwo')
         fig = sns_plot.get_figure()
@@ -65,8 +70,8 @@ class processDists:
         plt.clf()
 
     def plot_min_height(self):
-        query = "SELECT min_height * 100 FROM simulations where project like '{}%' AND min_height < 12.8"\
-            .format(self.configs['GENERAL']['PROJECT_NAME'])
+        query = "SELECT min_hgt_compa * 100 FROM simulations where project = {} AND min_hgt_compa < 12.8"\
+            .format(self.configs['general']['project_id'])
         results = self.query(query)
         dcbe = [float(i[0]) for i in results]
         sns_plot = sns.distplot(dcbe)
@@ -77,7 +82,7 @@ class processDists:
         plt.clf()
 
     def plot_min_vis(self):
-        query = "SELECT min_vis FROM simulations where project like '{}%' AND min_vis < 60".format(self.configs['GENERAL']['PROJECT_NAME'])
+        query = "SELECT min_vis_compa FROM simulations where project = {} AND min_vis_compa < 60".format(self.configs['general']['project_id'])
         results = self.query(query)
         vis = [float(i[0]) for i in results]
         sns_plot = sns.distplot(vis, bins=30)
@@ -88,8 +93,8 @@ class processDists:
         plt.clf()
 
     def plot_max_temp(self):
-        query = "SELECT max_temp FROM simulations where project like '{}%' and dcbe_time is " \
-                "not null".format(self.configs['GENERAL']['PROJECT_NAME'])
+        query = "SELECT max_temp FROM simulations where project = {} and dcbe_time is " \
+                "not null".format(self.configs['general']['project_id'])
         results = self.query(query)
         dcbe = [float(i[0]) for i in results]
         dist = getattr(stat, 'norm')
@@ -105,9 +110,16 @@ class processDists:
         plt.clf()
 
     def calculate_ccdf(self):
-        query = "SELECT fed, id FROM simulations where project like '{}%' " \
-                "and dcbe_time IS NOT NULL".format(self.configs['GENERAL']['PROJECT_NAME'])
+        query = "SELECT fed, id FROM simulations where project = {} " \
+                "and dcbe_time IS NOT NULL".format(self.configs['general']['project_id'])
         results = self.query(query)
+        fed = [json.loads(i[0]) for i in results]
+        for i in fed:
+            for values in i.values():
+                a = np.array(values[0])
+                x = collections.Counter(a)
+                print(x)
+
         self.total = len(results)
         fed_col = []
         for i in results:
@@ -243,54 +255,54 @@ class processDists:
 
     def dcbe_values(self):
         query = "SELECT count(*) FROM simulations where project like '{}%' AND dcbe_time < 9999".format(
-            self.configs['GENERAL']['PROJECT_NAME'])
+            self.configs['general']['project_id'])
         results = self.query(query)
         lower = results[0][0]/self.total
 
         query = "SELECT avg(dcbe_time) FROM simulations where project like '{}%' AND dcbe_time < 9999".format(
-            self.configs['GENERAL']['PROJECT_NAME'])
+            self.configs['general']['project_id'])
         results = self.query(query)
         mean = results[0][0]
         return [lower, mean]
 
     def wcbe_values(self):
         query = "SELECT avg(wcbe) FROM simulations where project like '{}%' AND dcbe_time IS NOT NULL".format(
-            self.configs['GENERAL']['PROJECT_NAME'])
+            self.configs['general']['project_id'])
         results = self.query(query)
         return results[0][0]
 
     def min_height_values(self):
         query = "SELECT count(*) FROM simulations where project like '{}%' AND min_height < 1.0" \
-            .format(self.configs['GENERAL']['PROJECT_NAME'])
+            .format(self.configs['general']['project_id'])
         results = self.query(query)
         lower = results[0][0] / self.total
 
         query = "SELECT avg(min_height) FROM simulations where project like '{}%' AND min_height < 1.8" \
-            .format(self.configs['GENERAL']['PROJECT_NAME'])
+            .format(self.configs['general']['project_id'])
         results = self.query(query)
         mean = results[0][0]
         return [lower, mean]
 
     def vis_values(self):
         query = "SELECT count(*) FROM simulations where project like '{}%' AND min_vis < 10".format(
-            self.configs['GENERAL']['PROJECT_NAME'])
+            self.configs['general']['project_id'])
         results = self.query(query)
         lower = results[0][0] / self.total
 
         query = "SELECT avg(min_vis) FROM simulations where project like '{}%' AND min_vis < 60".format(
-            self.configs['GENERAL']['PROJECT_NAME'])
+            self.configs['general']['project_id'])
         results = self.query(query)
         mean = results[0][0]
         return [lower, mean]
 
     def temp_values(self):
         query = "SELECT count(*) FROM simulations where project like '{}%' AND max_temp > 450".format(
-            self.configs['GENERAL']['PROJECT_NAME'])
+            self.configs['general']['project_id'])
         results = self.query(query)
         lower = results[0][0] / self.total
 
         query = "SELECT avg(max_temp) FROM simulations where project like '{}%' and dcbe_time is " \
-                "not null".format(self.configs['GENERAL']['PROJECT_NAME'])
+                "not null".format(self.configs['general']['project_id'])
         results = self.query(query)
         mean = results[0][0]
         return [lower, mean]
