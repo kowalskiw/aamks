@@ -15,44 +15,47 @@ import * as JSZipUtils from 'jszip-utils';
 })
 export class ResultsComponent implements OnInit {
   @ViewChild('canvasElement') canvasElement: ElementRef;
-
+  // Scrool event listener
   @HostListener('wheel', ['$event'])
   onWheel(event) {
-      // TODO: Add zooming under the cursor
-      let oldZoom = this.project.view.zoom;
-      let oldCenter = this.project.view.center;
-      let viewPos = this.project.view.viewToProject(event.point);
-      let newZoom = event.deltaY > 0 ? oldZoom / 1.1 : oldZoom * 1.1;
+    // TODO: Add zooming under the cursor
+    let oldZoom = this.project.view.zoom;
+    let oldCenter = this.project.view.center;
+    let viewPos = this.project.view.viewToProject(event.point);
+    let newZoom = event.deltaY > 0 ? oldZoom / 1.1 : oldZoom * 1.1;
+    this.project.view.zoom = newZoom;
 
-      let zoomScale = oldZoom / newZoom;
-      let centerAdjust = viewPos.subtract(oldCenter);
-      let offset = viewPos.subtract(centerAdjust.multiply(newZoom)).subtract(oldCenter);
-
-      this.project.view.zoom = newZoom;
-      //this.project.view.center = this.project.view.center.add(offset);
+    event.stopPropagation();
+    //let zoomScale = oldZoom / newZoom;
+    //let centerAdjust = viewPos.subtract(oldCenter);
+    //let offset = viewPos.subtract(centerAdjust.multiply(newZoom)).subtract(oldCenter);
+    //this.project.view.center = this.project.view.center.add(offset);
   }
 
+  // PaperJs
   scope: PaperScope;
   project: Project;
 
-  objectKeys = Object.keys;
-
   private subscribe: boolean = true;
   main: Main;
+
+  objectKeys = Object.keys;
 
   scale = 1; fireScale; intervalId; fireScaleCounter; colors; colorsDb;
   staticGeoms: Group;
   burningFireLocation; wallsSize; doorsSize; ballsSize; velocitiesSize; evacBalls; evacLabels; evacVelocities; burningFire; evacueesData; numberOfEvacuees;
   rooms = {};
   doors = {};
-  obstacles; dd_geoms; lerps; lastFrame = 1; deltaTime = 0; timeShift = 0; labelsSize = 40; sliderPos = 0; lerpFrame = 0; frame = 0; visContainsAnimation = 0; animationIsRunning = 0;
+  obstacles; dd_geoms;
+  lerps; lastFrame = 1; deltaTime = 0; timeShift = 0; labelsSize = 40; sliderPos = 0; lerpFrame = 0; frame = 0;
+  visContainsAnimation = 0; animationIsRunning = 0;
+  speed = 10;
 
   chooseVisArray = [];
   chooseVis;
   dstatic = {};
   visTitle = "";
-  animationControls = Array.apply(null, { length: 100 }).map(Number.call, Number);
-  style = "Dark";
+  style = "dark";
 
   constructor(
     private httpManager: HttpManagerService,
@@ -64,44 +67,111 @@ export class ResultsComponent implements OnInit {
 
   ngOnInit() {
     console.clear();
+    console.log(this.main);
     this.mainService.getMain().takeWhile(() => this.subscribe).subscribe(main => this.main = main);
 
     // Init paperjs
     this.scope = new PaperScope();
     this.project = new Project(this.canvasElement.nativeElement);
 
+    // Get anims
     this.httpManager.get('https://aamks.inf.sgsp.edu.pl/api/riskScenario/getAnims/' + this.main.currentProject.id + '/' + this.main.currentRiskScenario.id).then((result: Result) => {
       this.chooseVisArray = JSON.parse(result.data['anims']);
       this.chooseVis = this.chooseVisArray[0];
-      //this.notifierService.notify(result.meta.status, result.meta.details[0]);
     });
 
+    // Get static geom
     this.httpManager.get('https://aamks.inf.sgsp.edu.pl/api/riskScenario/getStatic/' + this.main.currentProject.id + '/' + this.main.currentRiskScenario.id).then((result: Result) => {
       this.dstatic = JSON.parse(result.data['static'])
       this.showStaticImage(this.chooseVis);
     });
 
-    // Initializing
+    // Initializing events
+    // onMouseDrag
     this.project.view.onMouseDrag = (event) => {
-      let offset = new Point(this.staticGeoms.position.x + event.delta.x, this.staticGeoms.position.y + event.delta.y)
-      this.staticGeoms.position = offset;
+
+      let offset = new Point(this.project.view.center.x - event.delta.x, this.project.view.center.y - event.delta.y)
+      this.project.view.center = offset;
+      
+      // Move geometry group 
+      //let offset = new Point(this.staticGeoms.position.x + event.delta.x, this.staticGeoms.position.y + event.delta.y)
+      //this.evacVelocities.position = offset;
+      //this.evacBalls.position = offset;
+      //this.evacLabels.position = offset;
+      //this.staticGeoms.position = offset;
     }
 
+    // onFrame
+    this.project.view.onFrame = (event) => {
+      // Main animation loop
+      if (this.animationIsRunning == 1) {
+        for (var i = 0; i < this.numberOfEvacuees; i++) {
+          this.updateAnimatedElement(i);
+        }
 
+        // The slider moves after each frame. The slider is a collection of 100 svg rectangles. We need to clear the previous rectangle and mark the current rectangle
+        this.sliderPos = Math.round(this.lerpFrame / (this.lerps * this.lastFrame) * 100);
+        this.lerpFrame++;
 
+        if (this.lerpFrame % this.lerps == 0) {
+          this.frame++;
+        }
 
+        // We need to rewind animation to the beginning before someone calls [frame+1]
+        if (this.frame >= this.lastFrame) {
+          this.frame = 0;
+          this.lerpFrame = 0;
+        }
+      }
+    }
 
+    // onClick
+    this.project.view.onClick = (event) => {
+      this.pause(event)
+    }
 
+    // onDoubleClick
+    this.project.view.onDoubleClick = (event) => {
+      this.play(event);
+    }
   }
+
   ngOnDestroy() {
     this.subscribe = false;
   }
 
-
-  public zoom(event) {
-    console.log(event);
+  public play(event?: any) {
+    this.lerps = Math.round(1 / ((this.speed / 100) + 0.00000000000000001)) + 1;
+    //$("canvas-mouse-coords").delay(1500).fadeOut('slow');
+    this.evacLabels.removeChildren();
+    this.animationIsRunning = 1;
   }
 
+  public pause(event?: any) {
+    this.animationIsRunning = 0;
+    this.lerps = 9999999999; // pause
+    var x;
+    var y;
+    for (var i = 0; i < this.numberOfEvacuees; i++) {
+      x = this.evacBalls.children[i].position.x;
+      y = this.evacBalls.children[i].position.y;
+      this.evacLabels.addChild(new Path.Circle({ center: new Point(x, y), radius: this.ballsSize * 1.4, fillColor: "#f80" }));
+      this.evacLabels.addChild(new PointText({ point: new Point(x - this.ballsSize / 1, y - this.ballsSize / 3), fillColor: "#000", content: "e" + i, fontFamily: 'Play', fontSize: this.ballsSize * 0.7 }));
+      this.evacLabels.addChild(new PointText({ point: new Point(x - this.ballsSize / 1, y + this.ballsSize / 2), fillColor: "#000", content: [Math.round(x / 100), Math.round(y / 100)], fontFamily: 'Play', fontSize: this.ballsSize * 0.7 }));
+    }
+  }
+
+  public stop() {
+    this.pause();
+    this.frame = 0;
+    this.lerpFrame = 0;
+    this.sliderPos = 0;
+    this.resetCanvas();
+  }
+
+  /**
+   * Choose visualization to show in select element
+   */
   public changeChooseVis() {
     this.lerpFrame = 0;
     this.frame = 0;
@@ -110,34 +180,25 @@ export class ResultsComponent implements OnInit {
     this.showStaticImage(this.chooseVis);
   }
 
-  public changeStyle() {
-    if (this.style == "Light") {
-      this.doorsSize = 0;
-      this.labelsSize = 0;
-      this.resetCanvas();
-      this.colors = this.colorsDb['lightColors']
-    } else {
-      this.colors = this.colorsDb['darkColors']
-    }
-    this.resetCanvas();
-    this.canvasElement.nativeElement.style.background = this.colors['bg'];
-  }
-
+  /**
+   * After we read a record from anims.json we reset the current visualization and setup a new one.
+   * We can only start animation after we are done with static rooms, doors etc.
+   * Paperjs can only scale relative to current size, so we must always return to the previous scale in view.scale().
+   * @param chosenAnim 
+   */
   public showStaticImage(chosenAnim) {
-    // After we read a record from anims.json we reset the current visualization and setup a new one.
-    // We can only start animation after we are done with static rooms, doors etc.
-    // Paperjs can only scale relative to current size, so we must always return to the previous scale in view.scale().
 
-    var floor = chosenAnim["floor"];
+    var floor = chosenAnim.floor;
+
     var newScale = this.dstatic[floor]['meta']['scale'];
-
     this.project.view.scale(newScale / this.scale);
     this.scale = newScale;
-    this.project.view.center = new Point(this.dstatic[floor]['meta']['translate']);
+    this.project.view.center = new Point(this.dstatic[floor].meta.translate);
 
-    this.visTitle = chosenAnim['title'];
+    this.visTitle = chosenAnim.title;
     this.animTimeFormat();
-    this.burningFireLocation = chosenAnim['fire_origin']
+
+    this.burningFireLocation = chosenAnim.fire_origin;
     this.wallsSize = Math.round(2 / this.scale);
     this.ballsSize = Math.round(5 / this.scale);
     this.velocitiesSize = Math.round(1 / this.scale);
@@ -148,16 +209,29 @@ export class ResultsComponent implements OnInit {
     this.obstacles = this.dstatic[floor].obstacles;
     this.dd_geoms = this.dstatic[floor].dd_geoms;
 
-    //  listenEvents();
     this.resetCanvas();
 
-    if (chosenAnim["highlight_geom"] != null) { this.highlightGeom(chosenAnim["highlight_geom"]); }
+    if (chosenAnim.highlight_geom != null) { this.highlightGeom(chosenAnim["highlight_geom"]); }
 
-    if (chosenAnim["anim"] != '') {
+    if (chosenAnim.anim != '') {
       this.showAnimation(chosenAnim);
     }
   }
 
+  /**
+   * Restet on new visualization, on scaling walls, etc.
+   */
+  public resetCanvas() {
+
+    this.paperjsDisplayImage();
+    this.append_dd_geoms();
+    //this.paperjsLetItBurn();
+    this.paperjsDisplayAnimation();
+  }
+
+  /**
+   * Format time label
+   */
   public animTimeFormat() {
     var date = new Date(null);
     var t = this.timeShift + this.deltaTime * this.sliderPos / 100
@@ -165,14 +239,9 @@ export class ResultsComponent implements OnInit {
     return date.toISOString().substr(14, 5);
   }
 
-  public resetCanvas() {
-    // Reset on new visualization, on scaling walls, etc.
-    this.paperjsDisplayImage();
-    this.append_dd_geoms();
-    this.paperjsLetItBurn();
-    this.paperjsDisplayAnimation();
-  }
-
+  /**
+   * Show static geometry
+   */
   public paperjsDisplayImage() {
     if (this.staticGeoms == undefined) {
       this.staticGeoms = new Group();
@@ -202,11 +271,12 @@ export class ResultsComponent implements OnInit {
         this.staticGeoms.addChild(new PointText({ point: new Point(this.doors[key]["center_x"] - 10, -this.doors[key]["center_y"] + 10), fillColor: this.colors["fg"], content: this.doors[key]["name"], opacity: 0.7, fontFamily: 'Play', fontSize: this.labelsSize * 0.75 }));
       }
     }
-
   }
 
+  /**
+   * Attach dd to static geom
+   */
   public append_dd_geoms() {
-    // We attach to the static geoms
     var g;
 
     for (var i = 0; i < this.dd_geoms['rectangles'].length; i++) {
@@ -259,7 +329,6 @@ export class ResultsComponent implements OnInit {
     // evacVelocities are the ---------> vectors attached to each ball
     // evacLabels are (e1 x,y) displayed on top of each ball
     // Old elements must be removed on various occassions, so we cannot return to early.
-
     if (this.evacVelocities == undefined) {
       this.evacVelocities = new Group();
       this.evacBalls = new Group();
@@ -310,61 +379,12 @@ export class ResultsComponent implements OnInit {
     this.evacVelocities.children[i].segments[1].point.y = this.evacBalls.children[i].position.y - this.evacueesData[this.frame][i][3];
   }
 
-  public afterLerpFrame() {
-    // The slider moves after each frame. The slider is a collection of 100 svg rectangles. We need to clear the previous rectangle and mark the current rectangle
-    //$('#slider_' + (sliderPos)).css("fill", "#000");
-    //$("sim-time").html(animTimeFormat());
-    this.sliderPos = Math.round(this.lerpFrame / (this.lerps * this.lastFrame) * 100);
-    this.lerpFrame++;
-    //$('#slider_' + (sliderPos - 0)).css("fill", "#555");
-
-    if (this.lerpFrame % this.lerps == 0) {
-      this.frame++;
-    }
-
-    // We need to rewind animation to the beginning before someone calls [frame+1]
-    if (this.frame >= this.lastFrame) {
-      this.frame = 0;
-      this.lerpFrame = 0;
-    }
-  }
-
-
-  public onMouseDown(event) {
-    this.animationIsRunning = 0;
-    this.lerps = 9999999999; // pause
-    var x;
-    var y;
-    //$("canvas-mouse-coords").text(Math.floor(event.downPoint['x']/100)+","+Math.floor(event.downPoint['y']/100));
-    //$("canvas-mouse-coords").text(Math.floor(event.downPoint['x']) + "," + -Math.floor(event.downPoint['y']));
-    //$("canvas-mouse-coords").css({ 'display': 'block', 'left': event.event.pageX, 'top': event.event.pageY });
-    for (var i = 0; i < this.numberOfEvacuees; i++) {
-      x = this.evacBalls.children[i].position.x;
-      y = this.evacBalls.children[i].position.y;
-      this.evacLabels.addChild(new Path.Circle({ center: new Point(x, y), radius: this.ballsSize * 1.4, fillColor: "#f80" }));
-      this.evacLabels.addChild(new PointText({ point: new Point(x - this.ballsSize / 1, y - this.ballsSize / 3), fillColor: "#000", content: "e" + i, fontFamily: 'Play', fontSize: this.ballsSize * 0.7 }));
-      this.evacLabels.addChild(new PointText({ point: new Point(x - this.ballsSize / 1, y + this.ballsSize / 2), fillColor: "#000", content: [Math.round(x / 100), Math.round(y / 100)], fontFamily: 'Play', fontSize: this.ballsSize * 0.7 }));
-    }
-  };
-
-  public onFrame(event) {
-    // Main animation loop
-    if (this.animationIsRunning == 1) {
-      for (var i = 0; i < this.numberOfEvacuees; i++) {
-        this.updateAnimatedElement(i);
-      }
-      this.afterLerpFrame();
-    }
-  }
-
-
-
-
   public showAnimation(chosenAnim) {
     // After static data is loaded to paperjs we can run animations.
     // 0.000001 & friends prevent divisions by 0.
-    var promise = new JSZip.external.Promise(function (resolve, reject) {
-      JSZipUtils.getBinaryContent("../" + chosenAnim["anim"], function (err, data) {
+    var promise = new JSZip.external.Promise((resolve, reject) => {
+      JSZipUtils.getBinaryContent('https://duch178.inf.sgsp.edu.pl/aamks_users/mateusz.fliszkiewicz@fkce.pl/10/risk/5/workers/' + chosenAnim.anim, function (err, data) {
+        console.log(err);
         if (err) {
           reject(err);
         } else {
@@ -375,12 +395,11 @@ export class ResultsComponent implements OnInit {
 
     promise.then(JSZip.loadAsync)
       .then(function (zip) {
-        console.log(zip);
-        return zip.catch.toString();
-        //return zip.file("anim.json").async("string");
+        console.log(zip['files']['anim.json'].async('string'));
+        return zip['files']['anim.json'].async('string');
       })
-
-      .then(function success(chosenAnim) {
+      .then((chosenAnim) => {
+        console.log(chosenAnim);
         var animJson = JSON.parse(chosenAnim);
         this.timeShift = animJson.time_shift;
         this.deltaTime = animJson.simulation_time - this.timeShift;
@@ -388,15 +407,9 @@ export class ResultsComponent implements OnInit {
         this.evacueesData = animJson.data;
         this.lastFrame = animJson.data.length - 1;
         this.numberOfEvacuees = animJson.data[0].length;
-        var speedProposal = Math.round(this.lastFrame / 5)
-        //$("animation-speed").html("<input type=text size=2 name=speed id=speed value=" + speedProposal + ">");
-        this.lerps = Math.round(1 / ((speedProposal / 100) + 0.0000000000000000001)) + 1;
+        this.speed = Math.round(this.lastFrame / 5)
+        this.lerps = Math.round(1 / ((this.speed / 100) + 0.0000000000000000001)) + 1;
 
-        //$("#speed").on("keyup", function () {
-        //  this.lerps = Math.round(1 / (($('#speed').val() / 100) + 0.0000000000000000001)) + 1;
-        //  this.lerpFrame = Math.floor(this.sliderPos * this.lastFrame * this.lerps / 100);
-        //  $('.canvas_slider_rect').css("fill", "#000000");
-        //});
 
         this.visContainsAnimation = 1;
         this.animationIsRunning = 1;
@@ -407,42 +420,29 @@ export class ResultsComponent implements OnInit {
       });
   }
 
+  public changeSpeed() {
+    this.lerps = Math.round(1 / ((this.speed / 100) + 0.0000000000000000001)) + 1;
+    this.lerpFrame = Math.floor(this.sliderPos * this.lastFrame * this.lerps / 100);
+  }
+
+  public changeStyle() {
+    if (this.style == "Light") {
+      this.doorsSize = 0;
+      this.labelsSize = 0;
+      this.resetCanvas();
+      this.colors = this.colorsDb['lightColors']
+    } else {
+      this.colors = this.colorsDb['darkColors']
+    }
+    this.resetCanvas();
+    this.canvasElement.nativeElement.style.background = this.colors['bg'];
+  }
 
 
   /*
-
-
   public listenEvents() {
-    $('#labels-size').on('keyup', function () { labelsSize = this.value; resetCanvas(); })
-    $('#walls-size').on('keyup', function () { wallsSize = this.value; resetCanvas(); })
-    $('#doors-size').on('keyup', function () { doorsSize = this.value; resetCanvas(); })
-    $('#balls-size').on('keyup', function () { ballsSize = this.value; resetCanvas(); })
-    $('#velocities-size').on('keyup', function () { velocitiesSize = this.value; resetCanvas(); })
-
     $('canvas-mouse-coords').click(function () {
-      lerps = Math.round(1 / (($('#speed').val() / 100) + 0.00000000000000001)) + 1;
-      $("canvas-mouse-coords").delay(1500).fadeOut('slow');
-      evacLabels.removeChildren();
-      animationIsRunning = 1;
     });
-
-
-    $('#canvas').on('DOMMouseScroll mousewheel', function (event) {
-      if (event.originalEvent.detail > 0 || event.originalEvent.wheelDelta < 0) { //alternative options for wheelData: wheelDeltaX & wheelDeltaY
-        view.scale(0.6);
-      } else {
-        view.scale(1.4);
-      }
-      //prevent page fom scrolling
-      return false;
-    });
-
-
-
-    $('#highlight-geoms').on('change', function () {
-      if (this.value.length > 0) { highlightGeom(this.value); }
-    });
-
     $('.canvas_slider_rect').click(function () {
       evacLabels.removeChildren();
       animationIsRunning = 1;
