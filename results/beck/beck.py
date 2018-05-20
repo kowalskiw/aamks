@@ -116,9 +116,11 @@ class processDists:
         fed = [json.loads(i[0]) for i in results]
         for i in fed:
             for values in i.values():
-                a = np.array(values[0])
+                a = np.array(values)
                 x = collections.Counter(a)
                 print(x)
+            #a = np.array(fed_values)
+            #print(x)
 
         self.total = len(results)
         fed_col = []
