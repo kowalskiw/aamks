@@ -383,7 +383,7 @@ export class ResultsComponent implements OnInit {
     // After static data is loaded to paperjs we can run animations.
     // 0.000001 & friends prevent divisions by 0.
     var promise = new JSZip.external.Promise((resolve, reject) => {
-      JSZipUtils.getBinaryContent('https://duch178.inf.sgsp.edu.pl/aamks_users/mateusz.fliszkiewicz@fkce.pl/10/risk/5/workers/' + chosenAnim.anim, function (err, data) {
+      JSZipUtils.getBinaryContent(this.main.hostAddres + '/aamks_users/' + this.main.email + '/' + this.main.currentProject.id + '/risk/' + this.main.currentRiskScenario.id + '/workers/' + chosenAnim.anim, function (err, data) {
         console.log(err);
         if (err) {
           reject(err);
