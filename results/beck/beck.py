@@ -137,18 +137,21 @@ class processDists:
 
     def plot_ccdf(self):
         fig = plt.figure(figsize=(12, 3))
-        axs = [fig.add_subplot(141), fig.add_subplot(142), fig.add_subplot(143),fig.add_subplot(144)]
+        axs = [fig.add_subplot(131), fig.add_subplot(132), fig.add_subplot(133)]
 
         xtic = tic.MaxNLocator(3)
 
         wykres = 0
         for key in self.losses.keys():
+            print(key, wykres)
+            if key == 'neglegible':
+                continue
             dane = ecdf(self.losses[key])
             axs[wykres].plot(sorted(self.losses[key]), 1-dane(sorted(self.losses[key])))
             axs[wykres].set_xlabel('Number of people')
             axs[wykres].set_ylabel('Likelihood')
             axs[wykres].set_title(key)
-            wykres =+ 1
+            wykres += 1
             #axs[i].xaxis.set_major_formatter(tic.FormatStrFormatter('%4.f'))
 
         fig.tight_layout()
