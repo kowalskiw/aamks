@@ -4,9 +4,9 @@
     "enabled_networks": {
         "localhost": 0,
         "network_208": 1,
-        "network_003": 1,
-        "network_tsz": 1,
-        "network_zil": 1
+        "network_003": 0,
+        "network_tsz": 0,
+        "network_zil": 0
     },
 
     "networks": {
