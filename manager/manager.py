@@ -92,7 +92,7 @@ class Manager():
             cmds.append("\"")
             cmds.append("echo ; echo ;")
             cmds.append("echo \`cat /etc/hostname\` ; ")
-            cmds.append("svn co https://github.com/aamks/aamks/branches/0.2 $AAMKS_PATH; ")
+            cmds.append("svn co https://github.com/aamks/aamks.git/branches/0.2 $AAMKS_PATH; ")
             cmds.append("svn up /home/svn/svn_mimooh/configs; ")
             cmds.append("sudo apt-get install --yes python3-pip python3-numpy ipython3 python3-urllib3 gearman ; ")
             cmds.append("sudo -H pip3 install networkX ; ")
