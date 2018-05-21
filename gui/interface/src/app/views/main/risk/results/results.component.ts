@@ -56,6 +56,7 @@ export class ResultsComponent implements OnInit {
   dstatic = {};
   visTitle = "";
   style = "dark";
+  setupBox = true;
 
   constructor(
     private httpManager: HttpManagerService,

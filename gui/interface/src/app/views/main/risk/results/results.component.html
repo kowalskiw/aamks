@@ -12,7 +12,9 @@
 
 <div id="canvas-mouse-coords"></div>
 <div id="animation-setup-box">
-    <table>
+    <p class="setup-toggle" *ngIf="setupBox" (click)="setupBox = false">[hide setup]</p>
+    <p class="setup-toggle" *ngIf="!setupBox" (click)="setupBox = true">[show setup]</p>
+    <table *ngIf="setupBox">
         <tr>
             <td>Animation </td>
             <td>
