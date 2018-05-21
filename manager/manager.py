@@ -62,7 +62,7 @@ class Manager():
             print('\n..........................................................')
             print(i['host'], "\t\t\t\t", i['network'])
             Popen("ssh -o ConnectTimeout=4 {} \"nohup sudo {} &\"".format(i['host'], cmd), shell=True)
-            time.sleep(self.sleep)
+            time.sleep(1)
 # }}}
     def kill_by_pattern(self, pattern):# {{{
         ''' Kill process by pattern on each host registered at gearman $AAMKS_SERVER '''
@@ -74,14 +74,16 @@ class Manager():
             Popen("ssh -o ConnectTimeout=3 {} \"nohup sudo {} &\"".format(i['host'], cmd), shell=True)
 
 # }}}
-    def revert_git_aamks(self):# {{{
-        self._access_hosts()
-        for i in self.s.query("SELECT distinct(host) FROM workers WHERE conf_enabled=1 ORDER BY network,host"):
-            Popen("ssh -o ConnectTimeout=3 {} \"nohup sudo svn revert $AAMKS_PATH --depth infinity  &\"".format(i['host']), shell=True)
+    def update_workers(self):# {{{
+        ''' 
+        * update git
+        * install packages
 
-# }}}
-    def git_update_workers(self):# {{{
-        ''' Update git on each host enabled in conf.json. '''
+        * SGSP specific -- you need to replace it on your own:
+            * In SGSP we tag hosts as workers via this check in ~/.bashrc:
+              [ -f "/etc/aamks_worker" ] && { export AAMKS_SERVER=192.168.100.131 }
+            * In SGSP we use /home/svn/svn_mimooh/config/ for storing .bashrc
+        '''
 
         self._access_hosts()
         for i in self.s.query("SELECT distinct(host) FROM workers WHERE conf_enabled=1 ORDER BY network,host"):
@@ -91,27 +93,28 @@ class Manager():
             cmds.append("echo ; echo ;")
             cmds.append("echo \`cat /etc/hostname\` ; ")
             cmds.append("svn co https://github.com/aamks/aamks/branches/0.2 $AAMKS_PATH; ")
+            cmds.append("svn up /home/svn/svn_mimooh/configs; ")
+            cmds.append("sudo apt-get install --yes python3-pip python3-numpy ipython3 python3-urllib3 gearman ; ")
+            cmds.append("sudo -H pip3 install networkX ; ")
+            cmds.append("rm -rf ~/.cache/; ")
+            cmds.append("sudo touch /etc/aamks_worker; ")
             cmds.append("\"")
             Popen("".join(cmds), shell=True)
             time.sleep(5)
 
-# }}}
-    def install_packages_workers(self):# {{{
-        ''' Install packages on workers '''
-
-        self._access_hosts()
         for i in self.s.query("SELECT distinct(host) FROM workers WHERE conf_enabled=1 ORDER BY network,host"):
             cmds=[]
             cmds.append("ssh -o ConnectTimeout=3 {} ".format(i['host']))
             cmds.append("\"")
             cmds.append("echo ; echo ;")
             cmds.append("echo \`cat /etc/hostname\` ; ")
-            cmds.append("sudo apt-get install --yes python3-pip python3-numpy ipython3 python3-urllib3 gearman ; ")
-            cmds.append("sudo -H pip3 install networkX ; ")
-            cmds.append("rm -rf ~/.cache/; ")
+            cmds.append("unset LANG ; ")
+            cmds.append("svn info {} | grep 'URL: https' ; ".format(os.environ['AAMKS_PATH']))
+            cmds.append("svn info {} | grep 'Revision' ; ".format(os.environ['AAMKS_PATH']))
+            cmds.append("svn info /home/svn/svn_mimooh/configs/ | grep 'Revision' ; ")
             cmds.append("\"")
             Popen("".join(cmds), shell=True)
-            time.sleep(5)
+            time.sleep(1)
 
 # }}}
     def reset_gearmand(self):# {{{
@@ -164,14 +167,10 @@ class Manager():
         parser.add_argument('-l' , help='list tasks'                                                , required=False   , action='store_true')
         parser.add_argument('-p' , help='ping all workers'                                          , required=False   , action='store_true')
         parser.add_argument('-r' , help='reset all gearmand '                                       , required=False   , action='store_true')
-        parser.add_argument('-s' , help='sleep seconds between commands                             , default 0'       , required=False       , type=int , default=0)
-        parser.add_argument('-U' , help='svn update workers'                                        , required=False   , action='store_true')
-        parser.add_argument('-X' , help='install packages on workers'                               , required=False   , action='store_true')
-        parser.add_argument('-Q' , help='git_aamks revert on workers'                               , required=False   , action='store_true')
+        parser.add_argument('-U' , help='update workers'                                            , required=False   , action='store_true')
         parser.add_argument('-w' , help='wakeOnLan'                                                 , required=False   , action='store_true')
         args = parser.parse_args()
 
-        self.sleep=args.s
         if args.a:
             self.add_workers()
         if args.c:
@@ -187,11 +186,7 @@ class Manager():
         if args.r:
             self.reset_gearmand()
         if args.U:
-            self.git_update_workers()
-        if args.X:
-            self.install_packages_workers()
-        if args.Q:
-            self.revert_git_aamks()
+            self.update_workers()
         if args.w:
             self.wake_on_lan()
 # }}}
