@@ -1,3 +1,19 @@
-img {
-    width: 30rem
+@import '../../../main.component.scss';
+
+.form-images {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    width: 100%;
+    padding: 1rem 0 1rem 0;
+    img {
+        width: 30%;
+        display: block;
+    }
+    img.img45 {
+        width: 45%;
+    }
+    img.img80 {
+        width: 70%;
+    }
 }

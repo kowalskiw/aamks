@@ -61,7 +61,7 @@ import { RampFilterPipe } from './pipes/ramp-filter/ramp-filter.pipe';
 import { StepsSortPipe } from './pipes/steps-sort/steps-sort.pipe';
 import { RiskScenarioService } from './services/risk-scenario/risk-scenario.service';
 import { BuildingCharacteristicComponent } from './views/main/risk/building-characteristic/building-characteristic.component';
-import { ResultsComponent } from './views/main/risk/results/results.component';
+import { VisualizationComponent } from './views/main/risk/results/visualization/visualization.component';
 import { SettingsComponent } from './views/main/risk/settings/settings.component';
 import { GeneralRiskComponent } from './views/main/risk/general-risk/general-risk.component';
 import { BuildingInfrastructureComponent } from './views/main/risk/building-infrastructure/building-infrastructure.component';
@@ -86,7 +86,7 @@ import { DistributionsComponent } from './views/main/risk/results/distributions/
     RampFilterPipe,
     StepsSortPipe,
     BuildingCharacteristicComponent,
-    ResultsComponent,
+    VisualizationComponent,
     SettingsComponent,
     GeneralRiskComponent,
     BuildingInfrastructureComponent,

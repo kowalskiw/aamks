@@ -1,19 +1,19 @@
-import { Main } from '../../../../services/main/main';
+import { Main } from '../../../../../services/main/main';
 import { Component, OnInit, ViewChild, ElementRef, HostListener } from '@angular/core';
 import { defColors } from './colors';
 import { forEach } from 'lodash';
-import { HttpManagerService, Result } from '../../../../services/http-manager/http-manager.service';
-import { MainService } from '../../../../services/main/main.service';
+import { HttpManagerService, Result } from '../../../../../services/http-manager/http-manager.service';
+import { MainService } from '../../../../../services/main/main.service';
 import { PaperScope, Project, View, Point, Group, Path, Size, PointText, Event } from 'paper';
 import * as JSZip from 'jszip';
 import * as JSZipUtils from 'jszip-utils';
 
 @Component({
-  selector: 'app-results',
-  templateUrl: './results.component.html',
-  styleUrls: ['./results.component.scss']
+  selector: 'app-visualization',
+  templateUrl: './visualization.component.html',
+  styleUrls: ['./visualization.component.scss']
 })
-export class ResultsComponent implements OnInit {
+export class VisualizationComponent implements OnInit {
   @ViewChild('canvasElement') canvasElement: ElementRef;
   // Scrool event listener
   @HostListener('wheel', ['$event'])

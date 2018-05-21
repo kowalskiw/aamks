@@ -1,4 +1,65 @@
-<p>
-  <img [src]="wcbe">
-  <img [src]="dcbe">
-</p>
+<div class="amper-container">
+  <div class="form-box">
+    <div class="form-row">
+      <div>
+        <label></label>
+        <div class="field-container">
+          <button (click)="generateResults()">Generate results</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-title" *ngIf="generatedResults">
+      <label class='header'>REST vs. ASET</label>
+    </div>
+    <div *ngIf="generatedResults">
+      <div class="form-images">
+        <img [src]="vis">
+        <img [src]="wcbe">
+        <img [src]="dcbe">
+      </div>
+    </div>
+
+    <div class="form-title" *ngIf="generatedResults">
+      <label class='header'>Losses</label>
+    </div>
+    <div *ngIf="generatedResults">
+      <div class="form-images">
+        <img [src]="lossesdead">
+        <img [src]="lossesheavy">
+        <img [src]="losseslight">
+      </div>
+    </div>
+
+    <div class="form-title" *ngIf="generatedResults">
+      <label class='header'>Tree</label>
+    </div>
+    <div *ngIf="generatedResults">
+      <div class="form-images">
+        <img class="img45" [src]="tree">
+        <img class="img45" [src]="tree_steel">
+      </div>
+    </div>
+
+    <div class="form-title" *ngIf="generatedResults">
+      <label class='header'>Other</label>
+    </div>
+    <div *ngIf="generatedResults">
+      <div class="form-images">
+        <img [src]="height">
+        <img [src]="pie_fault">
+        <img [src]="temp">
+      </div>
+    </div>
+
+    <div class="form-title" *ngIf="generatedResults">
+      <label class='header'>CCDF</label>
+    </div>
+    <div *ngIf="generatedResults">
+      <div class="form-images">
+        <img class="img70" [src]="ccdf">
+      </div>
+    </div>
+
+  </div>
+</div>

@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { Main } from '../../../../../services/main/main';
 import { MainService } from '../../../../../services/main/main.service';
+import { RiskScenarioService } from '../../../../../services/risk-scenario/risk-scenario.service';
+import { NotifierService } from 'angular-notifier';
 
 @Component({
   selector: 'app-distributions',
@@ -11,20 +13,59 @@ export class DistributionsComponent implements OnInit {
 
   main: Main;
 
-  path: string;
+  generatedResults = false;
 
+  path: string;
   wcbe: string;
   dcbe: string;
+  vis: string;
+  ccdf: string;
+  height: string;  
+  lossesdead: string;  
+  lossesheavy: string;  
+  losseslight: string;  
+  lossesneglegible: string;  
+  pie_fault: string;  
+  temp: string;  
+  tree: string;  
+  tree_steel: string;  
 
-  constructor(private mainService: MainService) { }
+  constructor(
+    private mainService: MainService,
+    private riskScenarioService: RiskScenarioService,
+    private readonly notifierService: NotifierService
+  ) { }
 
   ngOnInit() {
     this.mainService.getMain().subscribe(main => this.main = main);
 
-    this.path = this.main.hostAddres + '/aamks_users/' + this.main.email + '/' + this.main.currentProject.id + '/risk/' + this.main.currentRiskScenario.id + '/picts/';
+    // Check if results are already generated
+    this.riskScenarioService.isGeneratedResults().then(result => {
+      if (result['meta']['status'] == 'success') this.generatedResults = true;
+      else this.generatedResults == false;
+    });
 
+    this.path = this.main.hostAddres + '/aamks_users/' + this.main.email + '/' + this.main.currentProject.id + '/risk/' + this.main.currentRiskScenario.id + '/picts/';
     this.wcbe = this.path + 'wcbe.png';
     this.dcbe = this.path + 'dcbe.png';
+    this.vis = this.path + 'vis.png';
+    this.lossesdead = this.path + 'lossesdead.png';  
+    this.lossesheavy = this.path + 'lossesheavy.png';  
+    this.losseslight = this.path + 'losseslight.png';  
+    this.ccdf = this.path + 'ccdf.png';
+    this.height = this.path + 'height.png';  
+    this.pie_fault = this.path + 'pie_fault.png';  
+    this.temp = this.path + 'temp.png';  
+    this.tree = this.path + 'tree.png';  
+    this.tree_steel = this.path + 'tree_steel.png';  
   }
 
+  /** Run risk scenario */
+  public generateResults() {
+    this.riskScenarioService.generateResults().then(result => {
+      if (result['meta']['status'] == 'success') this.generatedResults = true;
+      else this.generatedResults == false;
+    });
+    this.notifierService.notify('success', 'Generating results. Wait for message from server.');
+  }
 }
