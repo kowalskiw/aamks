@@ -48,9 +48,9 @@ echo "sudo -u postgres psql -c 'sql commands'"
 echo 
 
 sudo -u postgres psql -lqt | cut -d \| -f 1 | grep -qw 'aamks' && { 
-	echo "Aamks already exists in psql. You may wish to clear psql from aamks by invoking";
-	echo 'sudo -u postgres psql -c "DROP DATABASE aamks;"' 
-	echo 'sudo -u postgres psql -c "DROP USER aamks;"' 
+	echo "Aamks already exists in psql. You may wish to clear psql from aamks by invoking:";
+	echo
+	echo 'sudo -u postgres psql -c "DROP DATABASE aamks"; sudo -u postgres psql -c "DROP USER aamks"' 
 	echo
 	exit;
 }
@@ -168,7 +168,6 @@ CREATE TABLE simulations ( ---{{{
     dcbe_time integer,
     dcbe_compa text,
     fed text,
-    min_hgt decimal,
     min_hgt decimal,
     min_vis_compa decimal,
     min_vis_cor decimal,

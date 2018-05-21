@@ -9,14 +9,23 @@ import json
 from subprocess import Popen,PIPE
 
 class SendMessage:# {{{
+    ''' 
+    SendMessage() may fail if there are unescaped bash special chars. 
+    First we try to send the msg as it is, and if that fails, we convert to
+    alphanums only.
+    '''
+
     def __init__(self,msg):
-        msg="".join([ c if c.isalnum() else " " for c in msg ])
         with open("/tmp/aamks.log", "a") as f: 
             f.write(msg+"\n")
         for to in [ i.strip() for i in os.environ['AAMKS_NOTIFY'].split(",") ]:
-            Popen("printf '{}' | sendxmpp -r aamks -d -t -u aamks -p aamkstatanka -j jabb.im {}> /dev/null 2>/dev/null &".format(msg, to), shell=True)
+            try:
+                Popen("printf '{}' | sendxmpp -r aamks -d -t -u aamks -p aamkstatanka -j jabb.im {}> /dev/null 2>/dev/null &".format(msg, to), shell=True)
+            except:
+                msg="".join([ c if c.isalnum() else " " for c in msg ])
+                Popen("printf '{}' | sendxmpp -r aamks -d -t -u aamks -p aamkstatanka -j jabb.im {}> /dev/null 2>/dev/null &".format(msg, to), shell=True)
 # }}}
-class Dump():# {{{
+class Dump:# {{{
     def __init__(self,struct):
         '''debugging function, much like print but handles various types better'''
         print()
@@ -31,13 +40,13 @@ class Dump():# {{{
         else:
             print(struct)
 # }}}
-class Colors():# {{{
+class Colors:# {{{
     def hex2rgb(self,color):
         rgb = color[1:]
         r, g, b = rgb[0:2], rgb[2:4], rgb[4:6]
         return tuple([float(int(v, 16)) / 255 for v in (r, g, b)])
 # }}}
-class SimIterations():# {{{
+class SimIterations:# {{{
     ''' 
     For a given project we may run simulation 0 to 999. Then we may wish to run
     100 simulations more and have them numbered here: from=1000 to=1099 These
@@ -64,7 +73,7 @@ class SimIterations():# {{{
         return self.r
         
 # }}}
-class Sqlite(): # {{{
+class Sqlite: # {{{
 
     def __init__(self, handle, must_exist=0):
         '''
@@ -126,7 +135,7 @@ class Sqlite(): # {{{
             except:
                 pass
 # }}}
-class Psql(): # {{{
+class Psql: # {{{
     def __init__(self):
         try:
             self.PSQL=psycopg2.connect("dbname='aamks' user='aamks' host={} password='{}'".format(os.environ['AAMKS_SERVER'], os.environ['AAMKS_PG_PASS']))
@@ -154,7 +163,7 @@ class Psql(): # {{{
             print(i)
 
 # }}}
-class Json(): # {{{
+class Json: # {{{
     def read(self,path): 
         try:
             f=open(path, 'r')
