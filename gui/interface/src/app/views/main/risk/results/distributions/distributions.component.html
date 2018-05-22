@@ -14,9 +14,18 @@
     </div>
     <div *ngIf="generatedResults">
       <div class="form-images">
-        <img [src]="vis">
-        <img [src]="wcbe">
-        <img [src]="dcbe">
+        <div class="image30">
+          <label>Vis</label>
+          <img [src]="vis">
+        </div>
+        <div class="image30">
+          <label>REST</label>
+          <img [src]="wcbe">
+        </div>
+        <div class="image30">
+          <label>ASET</label>
+          <img [src]="dcbe">
+        </div>
       </div>
     </div>
 
@@ -25,9 +34,18 @@
     </div>
     <div *ngIf="generatedResults">
       <div class="form-images">
-        <img [src]="lossesdead">
-        <img [src]="lossesheavy">
-        <img [src]="losseslight">
+        <div class="image30">
+          <label>Losses dead</label>
+          <img [src]="lossesdead">
+        </div>
+        <div class="image30">
+          <label>Losses heavy</label>
+          <img [src]="lossesheavy">
+        </div>
+        <div class="image30">
+          <label>Losses light</label>
+          <img [src]="losseslight">
+        </div>
       </div>
     </div>
 
@@ -36,8 +54,14 @@
     </div>
     <div *ngIf="generatedResults">
       <div class="form-images">
-        <img class="img45" [src]="tree">
-        <img class="img45" [src]="tree_steel">
+        <div class="image45">
+          <label>Tree</label>
+          <img [src]="tree">
+        </div>
+        <div class="image45">
+          <label>Tree steel</label>
+          <img [src]="tree_steel">
+        </div>
       </div>
     </div>
 
@@ -46,9 +70,18 @@
     </div>
     <div *ngIf="generatedResults">
       <div class="form-images">
-        <img [src]="height">
-        <img [src]="pie_fault">
-        <img [src]="temp">
+        <div class="image30">
+          <label>Height</label>
+          <img [src]="height">
+        </div>
+        <div class="image30">
+          <label>Pie fault</label>
+          <img [src]="pie_fault">
+        </div>
+        <div class="image30">
+          <label>Temp</label>
+          <img [src]="temp">
+        </div>
       </div>
     </div>
 
@@ -57,7 +90,10 @@
     </div>
     <div *ngIf="generatedResults">
       <div class="form-images">
-        <img class="img70" [src]="ccdf">
+        <div class="image70">
+          <label>CCDF</label>
+          <img [src]="ccdf">
+        </div>
       </div>
     </div>
 

@@ -3,6 +3,7 @@ import { Main } from '../../../../../services/main/main';
 import { MainService } from '../../../../../services/main/main.service';
 import { RiskScenarioService } from '../../../../../services/risk-scenario/risk-scenario.service';
 import { NotifierService } from 'angular-notifier';
+import { Result } from '../../../../../services/http-manager/http-manager.service';
 
 @Component({
   selector: 'app-distributions',
@@ -40,10 +41,18 @@ export class DistributionsComponent implements OnInit {
     this.mainService.getMain().subscribe(main => this.main = main);
 
     // Check if results are already generated
-    this.riskScenarioService.isGeneratedResults().then(result => {
-      if (result['meta']['status'] == 'success') this.generatedResults = true;
-      else this.generatedResults == false;
-    });
+    this.riskScenarioService.isGeneratedResults().then(
+      (result: Result) => {
+        if (result.meta.status == 'success') {
+          this.generatedResults = true;
+          this.notifierService.notify(result.meta.status, result.meta.details[0]);
+        }
+      },
+      (error: Result) => {
+        this.generatedResults = false;
+        this.notifierService.notify(error.meta.status, error.meta.details[0]);
+      }
+    );
 
     this.path = this.main.hostAddres + '/aamks_users/' + this.main.email + '/' + this.main.currentProject.id + '/risk/' + this.main.currentRiskScenario.id + '/picts/';
     this.wcbe = this.path + 'wcbe.png';

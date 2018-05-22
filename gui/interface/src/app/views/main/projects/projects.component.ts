@@ -89,6 +89,9 @@ export class ProjectsComponent implements OnInit {
 
   /** Delete risk scenario */
   deleteRiskScenario(projectIndex: number, riskScenarioIndex: number) {
+    if (this.main.currentRiskScenario != undefined && this.main.currentRiskScenario.id == this.main.projects[projectIndex].riskScenarios[riskScenarioIndex].id) 
+      this.main.currentRiskScenario = undefined;
+
     this.riskScenarioService.deleteRiskScenario(projectIndex, riskScenarioIndex);
   }
 

@@ -55,13 +55,13 @@ export class RiskScenarioService {
    * @param projectId 
    */
   public createRiskScenario(projectId: number) {
-
     // Request
-    this.httpManager.post('https://aamks.inf.sgsp.edu.pl/api/riskScenario/' + projectId, JSON.stringify({})).then((result: Result) => {
+    return this.httpManager.post('https://aamks.inf.sgsp.edu.pl/api/riskScenario/' + projectId, JSON.stringify({})).then((result: Result) => {
       let data = result.data;
       let riskScenario = new RiskScenario(JSON.stringify({ id: data['id'], projectId: data['projectId'], name: data['name'], riskObject: new Risk(JSON.stringify({})) }));
       // add ui state in riskscenario constructor ???
       this.main.currentProject.riskScenarios.push(riskScenario);
+      this.main.currentRiskScenario = riskScenario;
       this.notifierService.notify(result.meta.status, result.meta.details[0]);
     });
   }
@@ -150,13 +150,7 @@ export class RiskScenarioService {
    */
   public isGeneratedResults() {
     let riskScenario = this.main.currentRiskScenario;
-    let promise = new Promise((resolve, reject) => {
-      this.httpManager.get('https://aamks.inf.sgsp.edu.pl/api/riskScenario/isGeneratedResults/' + riskScenario.projectId + '/' + riskScenario.id).then((result: Result) => {
-        this.notifierService.notify(result.meta.status, result.meta.details[0]);
-        resolve(result);
-      });
-    });
-    return promise;
+    return this.httpManager.get('https://aamks.inf.sgsp.edu.pl/api/riskScenario/isGeneratedResults/' + riskScenario.projectId + '/' + riskScenario.id);
   }
 
 }

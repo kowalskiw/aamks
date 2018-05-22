@@ -103,7 +103,7 @@ import { DistributionsComponent } from './views/main/risk/results/distributions/
     NgSelectModule,
     NotifierModule.withConfig({
         position: { horizontal: { position: 'right', } },
-        behaviour: { autoHide: 3000, },
+        behaviour: { autoHide: 5000, },
       })
   ],
   providers: [
