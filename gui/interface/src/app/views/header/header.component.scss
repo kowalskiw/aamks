@@ -25,9 +25,13 @@
         }
         .right-top {
             display: flex;
-            flex-direction: row;
-            align-items: center;
-            justify-content: flex-end;
+            flex-direction: column;
+            align-items: flex-end;
+            justify-content: center;
+            .email {
+                font-size: 0.8rem;
+                font-style: italic;
+            }
         }
         .left-bottom {
             display: flex;

@@ -30,7 +30,8 @@ export class DistributionsComponent implements OnInit {
   temp: string;
   tree: string;
   tree_steel: string;
-
+  vis_cor: string;
+  hgt_cor: string;
   constructor(
     private mainService: MainService,
     private riskScenarioService: RiskScenarioService,
@@ -67,6 +68,8 @@ export class DistributionsComponent implements OnInit {
     this.temp = this.path + 'temp.png';
     this.tree = this.path + 'tree.png';
     this.tree_steel = this.path + 'tree_steel.png';
+    this.vis_cor = this.path + 'vis_cor.png';
+    this.hgt_cor = this.path + 'hgt_cor.png';
   }
 
   /** Run risk scenario */

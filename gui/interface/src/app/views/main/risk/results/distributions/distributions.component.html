@@ -97,5 +97,21 @@
       </div>
     </div>
 
+    <div class="form-title" *ngIf="generatedResults">
+      <label class='header'>Corridor</label>
+    </div>
+    <div *ngIf="generatedResults">
+      <div class="form-images">
+        <div class="image30">
+          <label>Vis</label>
+          <img [src]="vis_cor">
+        </div>
+        <div class="image30">
+          <label>Height</label>
+          <img [src]="hgt_cor">
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
