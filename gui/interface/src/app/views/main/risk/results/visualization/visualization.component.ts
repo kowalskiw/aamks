@@ -68,7 +68,6 @@ export class VisualizationComponent implements OnInit {
 
   ngOnInit() {
     console.clear();
-    console.log(this.main);
     this.mainService.getMain().takeWhile(() => this.subscribe).subscribe(main => this.main = main);
 
     // Init paperjs
@@ -92,7 +91,7 @@ export class VisualizationComponent implements OnInit {
     this.project.view.onMouseDrag = (event) => {
       let offset = new Point(this.project.view.center.x - event.delta.x, this.project.view.center.y - event.delta.y)
       this.project.view.center = offset;
-      
+
       // Move geometry group 
       //let offset = new Point(this.staticGeoms.position.x + event.delta.x, this.staticGeoms.position.y + event.delta.y)
       //this.evacVelocities.position = offset;
@@ -100,6 +99,9 @@ export class VisualizationComponent implements OnInit {
       //this.evacLabels.position = offset;
       //this.staticGeoms.position = offset;
     }
+
+    this.fireScale = 0.9;
+    this.fireScaleCounter = 1;
 
     // onFrame
     this.project.view.onFrame = (event) => {
@@ -115,6 +117,14 @@ export class VisualizationComponent implements OnInit {
 
         if (this.lerpFrame % this.lerps == 0) {
           this.frame++;
+
+          // Change fire object scale
+          this.fireScaleCounter++;
+          if (this.fireScaleCounter % 20 == 0) {
+            this.fireScale = 1 / this.fireScale;
+          }
+          this.burningFire.children[0].scale(this.fireScale);
+
         }
 
         // We need to rewind animation to the beginning before someone calls [frame+1]
@@ -138,6 +148,7 @@ export class VisualizationComponent implements OnInit {
 
   ngOnDestroy() {
     this.subscribe = false;
+    clearInterval(this.intervalId);
   }
 
   public play(event?: any) {
@@ -230,7 +241,6 @@ export class VisualizationComponent implements OnInit {
 
     this.paperjsDisplayImage();
     this.append_dd_geoms();
-    //this.paperjsLetItBurn();
     this.paperjsDisplayAnimation();
   }
 
@@ -276,6 +286,14 @@ export class VisualizationComponent implements OnInit {
         this.staticGeoms.addChild(new PointText({ point: new Point(this.doors[key]["center_x"] - 10, -this.doors[key]["center_y"] + 10), fillColor: this.colors["fg"], content: this.doors[key]["name"], opacity: 0.7, fontFamily: 'Play', fontSize: this.labelsSize * 0.75 }));
       }
     }
+
+    // Fire localization
+    if (this.burningFire == undefined) {
+      this.burningFire = new Group();
+    } else {
+      this.burningFire.removeChildren();
+    }
+    this.burningFire.addChild(new Path.Circle({ center: new Point(this.burningFireLocation[0], -this.burningFireLocation[1]), radius: this.ballsSize * 4, fillColor: this.colors["firefill"], strokeColor: this.colors["firestroke"], strokeWidth: this.ballsSize }));
   }
 
   /**
@@ -302,32 +320,6 @@ export class VisualizationComponent implements OnInit {
       g = this.dd_geoms['texts'][i];
       this.staticGeoms.addChild(new PointText({ point: new Point(g["xy"][0], -g["xy"][1]), content: g["content"], fontFamily: 'Play', fontSize: g["fontSize"], fillColor: g['fillColor'], opacity: g['opacity'] }));
     }
-  }
-
-  public paperjsLetItBurn() {
-    // The animated fire is displayed in a separate setInterval loop. Perhaps onFrame() suits more.
-    if (this.burningFire == undefined) {
-      this.burningFire = new Group();
-    } else {
-      this.burningFire.removeChildren();
-    }
-
-    if (this.burningFireLocation.length < 2) {
-      clearInterval(this.intervalId);
-      return;
-    }
-    this.burningFire.addChild(new Path.Circle({ center: new Point(this.burningFireLocation[0], -this.burningFireLocation[1]), radius: this.ballsSize * 4, fillColor: this.colors["firefill"], strokeColor: this.colors["firestroke"], strokeWidth: this.ballsSize }));
-
-    clearInterval(this.intervalId);
-    this.fireScale = 0.9;
-    this.fireScaleCounter = 1;
-    this.intervalId = setInterval(function () {
-      this.fireScaleCounter++;
-      if (this.fireScaleCounter % 20 == 0) {
-        this.fireScale = 1 / this.fireScale;
-      }
-      this.burningFire.children[0].scale(this.fireScale);
-    }, 100);
   }
 
   public paperjsDisplayAnimation() {
@@ -400,11 +392,9 @@ export class VisualizationComponent implements OnInit {
 
     promise.then(JSZip.loadAsync)
       .then(function (zip) {
-        console.log(zip['files']['anim.json'].async('string'));
         return zip['files']['anim.json'].async('string');
       })
       .then((chosenAnim) => {
-        console.log(chosenAnim);
         var animJson = JSON.parse(chosenAnim);
         this.timeShift = animJson.time_shift;
         this.deltaTime = animJson.simulation_time - this.timeShift;

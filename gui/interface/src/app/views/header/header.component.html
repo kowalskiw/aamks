@@ -8,7 +8,7 @@
   <div class="header-right">
 
     <div class="left-top">
-      <button (click)="showDiagnosticData()">Diagnostic</button>
+      <button *ngIf="main.userId == 1" (click)="showDiagnosticData()">Diagnostic</button>
     </div>
 
     <div class="center-top">

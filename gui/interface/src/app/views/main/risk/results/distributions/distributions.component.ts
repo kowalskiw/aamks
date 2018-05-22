@@ -20,15 +20,15 @@ export class DistributionsComponent implements OnInit {
   dcbe: string;
   vis: string;
   ccdf: string;
-  height: string;  
-  lossesdead: string;  
-  lossesheavy: string;  
-  losseslight: string;  
-  lossesneglegible: string;  
-  pie_fault: string;  
-  temp: string;  
-  tree: string;  
-  tree_steel: string;  
+  height: string;
+  lossesdead: string;
+  lossesheavy: string;
+  losseslight: string;
+  lossesneglegible: string;
+  pie_fault: string;
+  temp: string;
+  tree: string;
+  tree_steel: string;
 
   constructor(
     private mainService: MainService,
@@ -49,15 +49,15 @@ export class DistributionsComponent implements OnInit {
     this.wcbe = this.path + 'wcbe.png';
     this.dcbe = this.path + 'dcbe.png';
     this.vis = this.path + 'vis.png';
-    this.lossesdead = this.path + 'lossesdead.png';  
-    this.lossesheavy = this.path + 'lossesheavy.png';  
-    this.losseslight = this.path + 'losseslight.png';  
+    this.lossesdead = this.path + 'lossesdead.png';
+    this.lossesheavy = this.path + 'lossesheavy.png';
+    this.losseslight = this.path + 'losseslight.png';
     this.ccdf = this.path + 'ccdf.png';
-    this.height = this.path + 'height.png';  
-    this.pie_fault = this.path + 'pie_fault.png';  
-    this.temp = this.path + 'temp.png';  
-    this.tree = this.path + 'tree.png';  
-    this.tree_steel = this.path + 'tree_steel.png';  
+    this.height = this.path + 'height.png';
+    this.pie_fault = this.path + 'pie_fault.png';
+    this.temp = this.path + 'temp.png';
+    this.tree = this.path + 'tree.png';
+    this.tree_steel = this.path + 'tree_steel.png';
   }
 
   /** Run risk scenario */
