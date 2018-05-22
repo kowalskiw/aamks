@@ -238,7 +238,6 @@ export class VisualizationComponent implements OnInit {
    * Restet on new visualization, on scaling walls, etc.
    */
   public resetCanvas() {
-
     this.paperjsDisplayImage();
     this.append_dd_geoms();
     this.paperjsDisplayAnimation();
@@ -364,16 +363,21 @@ export class VisualizationComponent implements OnInit {
     // todo performance? 
     // if(frame == 0 || evacueesData[frame][i][5] != evacueesData[frame-1][i][5] ) {  evacBalls.children[i].opacity=evacVelocities.children[i].opacity=evacueesData[frame][i][5]; }
     // if(frame == 0 || evacueesData[frame][i][4] != evacueesData[frame-1][i][4] ) {  evacBalls.children[i].fillColor=colors['dose'+evacueesData[frame][i][4]]; } 
-    this.evacBalls.children[i].opacity = this.evacVelocities.children[i].opacity = this.evacueesData[this.frame + 1][i][5];
-    this.evacBalls.children[i].fillColor = this.colors['dose' + this.evacueesData[this.frame][i][4]];
+    if (this.evacueesData[this.frame][i][4] != 'H') {
+      this.evacBalls.children[i].opacity = this.evacVelocities.children[i].opacity = this.evacueesData[this.frame + 1][i][5];
+      this.evacBalls.children[i].fillColor = this.colors['dose' + this.evacueesData[this.frame][i][4]];
 
-    this.evacBalls.children[i].position.x = this.evacueesData[this.frame][i][0] + (this.evacueesData[this.frame + 1][i][0] - this.evacueesData[this.frame][i][0]) * (this.lerpFrame % this.lerps) / this.lerps;
-    this.evacBalls.children[i].position.y = - this.evacueesData[this.frame][i][1] - (this.evacueesData[this.frame + 1][i][1] - this.evacueesData[this.frame][i][1]) * (this.lerpFrame % this.lerps) / this.lerps;
+      this.evacBalls.children[i].position.x = this.evacueesData[this.frame][i][0] + (this.evacueesData[this.frame + 1][i][0] - this.evacueesData[this.frame][i][0]) * (this.lerpFrame % this.lerps) / this.lerps;
+      this.evacBalls.children[i].position.y = - this.evacueesData[this.frame][i][1] - (this.evacueesData[this.frame + 1][i][1] - this.evacueesData[this.frame][i][1]) * (this.lerpFrame % this.lerps) / this.lerps;
 
-    this.evacVelocities.children[i].segments[0].point.x = this.evacBalls.children[i].position.x;
-    this.evacVelocities.children[i].segments[0].point.y = this.evacBalls.children[i].position.y;
-    this.evacVelocities.children[i].segments[1].point.x = this.evacBalls.children[i].position.x + this.evacueesData[this.frame][i][2];
-    this.evacVelocities.children[i].segments[1].point.y = this.evacBalls.children[i].position.y - this.evacueesData[this.frame][i][3];
+      this.evacVelocities.children[i].segments[0].point.x = this.evacBalls.children[i].position.x;
+      this.evacVelocities.children[i].segments[0].point.y = this.evacBalls.children[i].position.y;
+      this.evacVelocities.children[i].segments[1].point.x = this.evacBalls.children[i].position.x + this.evacueesData[this.frame][i][2];
+      this.evacVelocities.children[i].segments[1].point.y = this.evacBalls.children[i].position.y - this.evacueesData[this.frame][i][3];
+    }
+    else {
+      this.evacBalls.children[i].fillColor = this.colors['doseH'];
+    }
   }
 
   public showAnimation(chosenAnim) {
