@@ -81,6 +81,19 @@ class processDists:
         fig.savefig("{}/picts/height.png".format(self.dir))
         plt.clf()
 
+    def plot_min_height_cor(self):
+        query = "SELECT min_hgt_cor * 100 FROM simulations where project = {} AND min_hgt_cor < 12.8"\
+            .format(self.configs['general']['project_id'])
+        results = self.query(query)
+        dcbe = [float(i[0]) for i in results]
+        sns_plot = sns.distplot(dcbe)
+#        sns.plt.xlabel('Wysokość warstwy dymu [cm]')
+#        sns.plt.ylabel('Prawdopodobieństwo')
+        fig = sns_plot.get_figure()
+        fig.savefig("{}/picts/hgr_cor.png".format(self.dir))
+        plt.clf()
+
+
     def plot_min_vis(self):
         query = "SELECT min_vis_compa FROM simulations where project = {} AND min_vis_compa < 60".format(self.configs['general']['project_id'])
         results = self.query(query)
@@ -91,6 +104,18 @@ class processDists:
         fig = sns_plot.get_figure()
         fig.savefig("{}/picts/vis.png".format(self.dir))
         plt.clf()
+
+    def plot_min_vis_cor(self):
+        query = "SELECT min_vis_cor FROM simulations where project = {} AND min_vis_cor < 60".format(self.configs['general']['project_id'])
+        results = self.query(query)
+        vis = [float(i[0]) for i in results]
+        sns_plot = sns.distplot(vis, bins=30)
+        #sns.plt.xlabel('Zasięg widzialności [m]')
+        #sns.plt.ylabel('Prawdopodobieństwo')
+        fig = sns_plot.get_figure()
+        fig.savefig("{}/picts/vis_cor.png".format(self.dir))
+        plt.clf()
+
 
     def plot_max_temp(self):
         query = "SELECT max_temp FROM simulations where project = {} and dcbe_time is " \
@@ -143,7 +168,6 @@ class processDists:
 
         wykres = 0
         for key in self.losses.keys():
-            print(key, wykres)
             if key == 'neglegible':
                 continue
             dane = ecdf(self.losses[key])
@@ -292,8 +316,10 @@ p = processDists()
 p.plot_dcbe_dist()
 p.plot_wcbe_dist()
 p.plot_min_height()
+p.plot_min_height_cor()
 p.plot_max_temp()
 p.plot_min_vis()
+p.plot_min_vis_cor()
 #wprint(p.wcbe_time(1000))
 p.calculate_ccdf()
 p.plot_ccdf()
@@ -336,3 +362,4 @@ s = EventTreeSteel(building=p.dir, p_general=bar, p_develop=p_ext, p_Tk=p_tk, p_
 s.draw_tree()
 #p.plot_event_tree()
 
+print('Charts are ready to display')
