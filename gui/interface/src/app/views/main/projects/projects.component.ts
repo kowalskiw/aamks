@@ -35,6 +35,7 @@ export class ProjectsComponent implements OnInit {
   }
   unsetCurrentProject() {
     this.main.currentProject = undefined;
+    this.main.currentRiskScenario = undefined;
   }
 
   /** Add new project */
