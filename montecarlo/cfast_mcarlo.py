@@ -152,7 +152,7 @@ class CfastMcarlo():
         '''
 
         draw_value=uniform(0,1)
-        for i in self.dists['window_open']['setup']:
+        for i in self.conf['settings']['window_open']['setup']:
             if outdoor_temp > i['outside_temperature_range'][0] and outdoor_temp <= i['outside_temperature_range'][1]:
                 if draw_value < i['window_is_full_open_probability']:
                     how_much_open=1 
@@ -347,7 +347,8 @@ class CfastMcarlo():
             collect.append(v['vent_from'])                                  # COMPARTMENT1
             collect.append(v['vent_to'])                                    # COMPARTMENT2
             collect.append(v['vvent_room_seq'])                             # VENT_NUMBER
-            collect.append(v['room_area'])                                  # AREA OF THE ROOM, feb.2018: previously: round((v['width']*v['depth'])/1e4, 2)
+            #collect.append(v['room_area'])                                  # AREA OF THE ROOM, feb.2018: previously: round((v['width']*v['depth'])/1e4, 2)
+            collect.append(round((v['width']*v['depth'])/1e4, 2))                                  # AREA OF THE ROOM, feb.2018: previously: round((v['width']*v['depth'])/1e4, 2)
             collect.append(2)                                               # Type of dumper 1 - round, 2 - squere
             collect.append('TIME')                                          # Type of realease
             collect.append('')                                              # empty for time release
