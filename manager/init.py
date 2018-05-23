@@ -136,7 +136,7 @@ class OnInit():
     def _info(self):# {{{
         #print("Your AAMKS variables can be adjusted in your ~/.bashrc")
         #Popen('env | grep AAMKS', shell=True)
-        print("Running project id:", self.conf['general']['project_id'])
+        print("Project id: {} run.\n".format(self.conf['general']['project_id']))
 # }}}
 class OnEnd():
     def __init__(self):# {{{
@@ -158,13 +158,19 @@ class OnEnd():
 
         si=SimIterations(self.conf['general']['project_id'], self.conf['general']['number_of_simulations'])
         project=self.conf['general']['project_id']
-        for i in range(*si.get()):
-            worker="{}/workers/{}".format(os.environ['AAMKS_PROJECT'],i)
-            worker = worker.replace("/home","")
-            gearman="gearman -b -f aRun 'http://{}{}'".format(os.environ['AAMKS_SERVER'], worker)
-            #print("cd /usr/local/aamks/evac/; python3 worker.py http://{}:8123/workers/{}".format(os.environ['AAMKS_SERVER'],i))
-            print(gearman)
-            os.system(gearman)
+        try:
+            for i in range(*si.get()):
+                worker="{}/workers/{}".format(os.environ['AAMKS_PROJECT'],i)
+                worker = worker.replace("/home","")
+                gearman="gearman -b -f aRun 'http://{}{}'".format(os.environ['AAMKS_SERVER'], worker)
+                #print("cd /usr/local/aamks/evac/; python3 worker.py http://{}:8123/workers/{}".format(os.environ['AAMKS_SERVER'],i))
+                #print(gearman)
+                os.system(gearman)
+        except Exception as e:
+            print('An error code occured: {}'.format(e))
+        else: 
+            print('{} simulations run successfully'.format(i))
+            
 # }}}
     def _visualize_aanim(self):# {{{
         ''' If we chosen to see the animated demo of aamks. '''

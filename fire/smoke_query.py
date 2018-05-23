@@ -227,9 +227,9 @@ class SmokeQuery:
             return 0.
 
         if hgt > self.config['LAYER_HEIGHT']:
-            layer = 'U'
-        else:
             layer = 'L'
+        else:
+            layer = 'U'
 
         fed_co = 2.764e-5 * ((conditions[layer+'LCO'] * 10000) ** 1.036) * (self.config['TIME_STEP'] / 60)
         fed_hcn = (exp((conditions[layer+'LHCN'] * 10000) / 43) / 220 - 0.0045) * (self.config['TIME_STEP'] / 60)

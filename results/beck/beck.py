@@ -90,7 +90,7 @@ class processDists:
 #        sns.plt.xlabel('Wysokość warstwy dymu [cm]')
 #        sns.plt.ylabel('Prawdopodobieństwo')
         fig = sns_plot.get_figure()
-        fig.savefig("{}/picts/hgr_cor.png".format(self.dir))
+        fig.savefig("{}/picts/hgt_cor.png".format(self.dir))
         plt.clf()
 
 
