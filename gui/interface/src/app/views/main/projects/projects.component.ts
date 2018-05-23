@@ -31,9 +31,16 @@ export class ProjectsComponent implements OnInit {
 
   /** Set/unset project to current in main object */
   setCurrentProject(index: number) {
+    if(this.main.currentProject != undefined && this.main.currentRiskScenario != undefined) {
+      this.riskScenarioService.updateRiskScenario(this.main.currentProject.id, this.main.currentRiskScenario.id);
+    }
     this.projectService.setCurrnetProject(index);
+    this.main.currentRiskScenario = undefined;
   }
   unsetCurrentProject() {
+    if(this.main.currentProject != undefined && this.main.currentRiskScenario != undefined) {
+      this.riskScenarioService.updateRiskScenario(this.main.currentProject.id, this.main.currentRiskScenario.id);
+    }
     this.main.currentProject = undefined;
     this.main.currentRiskScenario = undefined;
   }

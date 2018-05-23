@@ -92,6 +92,15 @@
       </div>
     </div>
 
+    <div class="form-row">
+      <div>
+        <label>Emergency evacuation lighting (C const.):</label>
+        <div class="field-container">
+          <input type="text" [ngModelOptions]="{updateOn:'blur'}" [(ngModel)]="settings.cConst" decimalInput>
+          <ng-katex equation=""></ng-katex>
+        </div>
+      </div>
+    </div>
 
   </div>
 </div>

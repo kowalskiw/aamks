@@ -92,7 +92,8 @@ export class JsonRiskService {
           standard_door_is_open_probability: this.riskObject.settings.doorOpen.standardDoorIsOpenProbability,
           vvents_no_failure_probability: this.riskObject.settings.doorOpen.vventsNoFailureProbability
         },
-        c_const: this.riskObject.settings.cConst,
+        //c_const: toNumber(this.riskObject.settings.cConst),
+        c_const: 8,
         pre_evacuation_time: {
           comment: this.riskObject.settings.preEvacuationTime.comment,
           mean_and_sd_room_of_fire_origin: this.riskObject.settings.preEvacuationTime.meanAndSdRoomOfFireOrigin,
