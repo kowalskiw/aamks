@@ -20,6 +20,7 @@ class OnInit():
             os.environ["AAMKS_PROJECT"]=sys.argv[1]
         self.json=Json()
         self.conf=self.json.read("{}/conf_aamks.json".format(os.environ['AAMKS_PROJECT']))
+        self.project_id=self.conf['general']['project_id']
         self.p=Psql()
         self._clear_sqlite()
         self._setup_simulations()
@@ -44,13 +45,12 @@ class OnInit():
         max(iteration)+1 
         '''
 
-        project=self.conf['general']['project_id']
         how_many=self.conf['general']['number_of_simulations']
 
         r=[]
         try:
             # If the project already exists in simulations table (e.g. adding 100 simulations to existing 1000); try: fails on addition on int+None.
-            r.append(self.p.query('SELECT max(iteration)+1 FROM simulations WHERE project=%s', (project,))[0][0])
+            r.append(self.p.query('SELECT max(iteration)+1 FROM simulations WHERE project=%s', (self.project_id,))[0][0])
             r.append(r[0]+how_many)
         except:
             # If a new project
@@ -69,7 +69,7 @@ class OnInit():
             sim_dir="{}/{}".format(workers_dir,i)
             os.makedirs(sim_dir, exist_ok=True)
             os.chmod(sim_dir, 0o777)
-            self.p.query("INSERT INTO simulations(iteration,project) VALUES(%s,%s)", (i,self.conf['general']['project_id']))
+            self.p.query("INSERT INTO simulations(iteration,project) VALUES(%s,%s)", (i,self.project_id))
 
 # }}}
     def _setup_vis(self):# {{{
@@ -134,9 +134,7 @@ class OnInit():
 ''')
 # }}}
     def _info(self):# {{{
-        #print("Your AAMKS variables can be adjusted in your ~/.bashrc")
-        #Popen('env | grep AAMKS', shell=True)
-        print("Project id: {} run.\n".format(self.conf['general']['project_id']))
+        print("Project id: {} run.\n".format(self.project_id))
 # }}}
 class OnEnd():
     def __init__(self):# {{{
@@ -145,7 +143,6 @@ class OnEnd():
         self.conf=self.json.read("{}/conf_aamks.json".format(os.environ['AAMKS_PROJECT']))
         self.p=Psql()
         self._gearman_register_works()
-        self._visualize_aanim()
 # }}}
     def _gearman_register_works(self):# {{{
         ''' 
@@ -156,31 +153,16 @@ class OnEnd():
         if os.environ['AAMKS_USE_GEARMAN']=='0':
             return
 
-        si=SimIterations(self.conf['general']['project_id'], self.conf['general']['number_of_simulations'])
-        project=self.conf['general']['project_id']
+        si=SimIterations(self.project_id, self.conf['general']['number_of_simulations'])
         try:
             for i in range(*si.get()):
                 worker="{}/workers/{}".format(os.environ['AAMKS_PROJECT'],i)
                 worker = worker.replace("/home","")
                 gearman="gearman -b -f aRun 'http://{}{}'".format(os.environ['AAMKS_SERVER'], worker)
-                #print("cd /usr/local/aamks/evac/; python3 worker.py http://{}:8123/workers/{}".format(os.environ['AAMKS_SERVER'],i))
-                #print(gearman)
                 os.system(gearman)
         except Exception as e:
             print('An error code occured: {}'.format(e))
         else: 
             print('{} simulations run successfully'.format(i))
             
-# }}}
-    def _visualize_aanim(self):# {{{
-        ''' If we chosen to see the animated demo of aamks. '''
-
-        if self.conf['general']['project_id'] == 'aanim':
-            si=SimIterations(self.conf['general']['project_id'], self.conf['general']['number_of_simulations'])
-            project=self.conf['general']['project_id']
-            for i in range(*si.get()):
-                worker_dir="{}/workers/{}".format(os.environ['AAMKS_PROJECT'],i)
-                shutil.copyfile("{}/examples/aanim/f0.zip".format(os.environ['AAMKS_PATH'])    , "{}/f0.zip".format(worker_dir))
-                shutil.copyfile("{}/examples/aanim/evac.json".format(os.environ['AAMKS_PATH']) , "{}/evac.json".format(worker_dir))
-                Vis(None, "{}/f0.zip".format(i), "Demo aanim, fire at (0,0)", (0,0))
 # }}}

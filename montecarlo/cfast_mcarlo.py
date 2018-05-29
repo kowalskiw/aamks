@@ -5,8 +5,6 @@ import os
 import shutil
 import math
 from collections import OrderedDict
-import psycopg2
-import psycopg2.extras # needed? 
 import json
 import getopt
 from pprint import pprint
@@ -40,7 +38,6 @@ class CfastMcarlo():
         self.p=Psql()
         self.json=Json()
         self.conf=self.json.read("{}/conf_aamks.json".format(os.environ['AAMKS_PROJECT']))
-        #self.dists=self.json.read("{}/distributions.json".format(os.environ['AAMKS_PROJECT']))
         self._psql_collector=OrderedDict()
 
         si=SimIterations(self.conf['general']['project_id'], self.conf['general']['number_of_simulations'])
@@ -59,6 +56,7 @@ class CfastMcarlo():
         return outdoor_temp
 # }}}
     def _draw_fire(self):# {{{
+        ''' FIRE_ORIGIN is passed via fire_origin.json to evac.in '''
         origin_in_room=binomial(1,self.conf['settings']['origin_of_fire']['fire_starts_in_room_probability'])
         
         self.all_corridors_and_halls=[z['name'] for z in self.s.query("SELECT name FROM aamks_geom WHERE type_pri='COMPA' and type_sec in('COR','HALL') ORDER BY name") ]
@@ -104,7 +102,6 @@ class CfastMcarlo():
         result['heatcom']=str(i['heatcom'])
         return result
 # }}}
-    @property
     def _draw_fire_development(self): # {{{
         ''' 
         Generate the fire. Alpha t square on the left, then constant in the
@@ -339,7 +336,6 @@ class CfastMcarlo():
 # }}}
     def _section_vvent(self):# {{{
         # VVENT AREA, SHAPE, INITIAL_FRACTION
-        # TODO: check room_area
         txt=['!! VVENT,top,bottom,id,area,shape,rel_type,criterion,target,i_time, i_frac, f_time, f_frac, offset_x, offset_y']
         for v in self.s.query("SELECT distinct v.room_area, v.type_sec, v.vent_from, v.vent_to, v.vvent_room_seq, v.width, v.depth, (v.x0 - c.x0) + 0.5*v.width as x0, (v.y0 - c.y0) + 0.5*v.depth as y0 FROM aamks_geom v JOIN aamks_geom c on v.vent_to_name = c.name WHERE v.type_pri='VVENT' AND c.type_pri = 'COMPA' ORDER BY v.vent_from,v.vent_to"):
             collect=[]
@@ -489,11 +485,9 @@ class CfastMcarlo():
 #}}}
     def _write(self):#{{{
         ''' 
-        Write cfast variables to postgres. Also, since we invent
-        ROOM_OF_FIRE_ORIGIN here, we need to pass it to evac via
-        sim_id/evac.json. Both column names and the values for psql come from
-        trusted source, so there should be no security issues with just joining
-        dict data (non-parametrized query). 
+        Write cfast variables to postgres. Both column names and the values for
+        psql come from trusted source, so there should be no security issues
+        with just joining dict data (non-parametrized query). 
         '''
 
         pairs=[]

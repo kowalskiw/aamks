@@ -5,8 +5,6 @@ import os
 import shutil
 import math
 from collections import OrderedDict
-import psycopg2
-import psycopg2.extras # needed? 
 import json
 import getopt
 from pprint import pprint
@@ -39,7 +37,6 @@ class EvacMcarlo():
         self.s=Sqlite("{}/aamks.sqlite".format(os.environ['AAMKS_PROJECT']))
         self.json=Json()
         self.conf=self.json.read("{}/conf_aamks.json".format(os.environ['AAMKS_PROJECT']))
-        #self.dists=self.json.read("{}/distributions.json".format(os.environ['AAMKS_PROJECT']))
         self.floors=[z['floor'] for z in self.s.query("SELECT DISTINCT floor FROM aamks_geom ORDER BY floor")]
         self._make_doors_centers()
 
@@ -74,10 +71,6 @@ class EvacMcarlo():
         We dispatch the evacuees across the building according to the density
         distribution. 
         '''
-
-        # TODO: we used WALL_MARGIN previously
-        # uniform(r['x0'] + self.conf['AAMKS_CONF']['WALL_MARGIN']
-        
 
         self.dispatched_evacuees=OrderedDict() 
         for floor in self.floors:
