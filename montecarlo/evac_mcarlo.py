@@ -139,6 +139,7 @@ class EvacMcarlo():
             pre_evacuation=self.conf['settings']['pre_evacuation_time']['mean_and_sd_ordinary_room']
         else:
             pre_evacuation=self.conf['settings']['pre_evacuation_time']['mean_and_sd_room_of_fire_origin']
+        #print(room, self.conf['ROOM_OF_FIRE_ORIGIN'])
         return round(lognorm(s=1, loc=pre_evacuation[0], scale=pre_evacuation[1]).rvs(), 2)
 # }}}
 

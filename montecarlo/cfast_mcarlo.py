@@ -102,6 +102,7 @@ class CfastMcarlo():
         result['heatcom']=str(i['heatcom'])
         return result
 # }}}
+    @property
     def _draw_fire_development(self): # {{{
         ''' 
         Generate the fire. Alpha t square on the left, then constant in the

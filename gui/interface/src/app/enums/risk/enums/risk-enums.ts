@@ -19,8 +19,8 @@ export const RiskEnums =
                 alphaMod: 0.047,
                 hrrpua: 500, // pokazac w ustawieniach
                 evacRoomDensity: 1, // z bs 9999
-                evacCorridorDensity: 1, // z bs 9999
-                evacStaircaseDensity: 1, // z bs 9999
+                evacCorridorDensity: 20, // z bs 9999
+                evacStaircaseDensity: 20, // z bs 9999
                 evacHallDensity: 1, // z bs 9999
             },
             {

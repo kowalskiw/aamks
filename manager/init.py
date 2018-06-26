@@ -153,7 +153,7 @@ class OnEnd():
         if os.environ['AAMKS_USE_GEARMAN']=='0':
             return
 
-        si=SimIterations(self.project_id, self.conf['general']['number_of_simulations'])
+        si=SimIterations(self.conf['general']['project_id'], self.conf['general']['number_of_simulations'])
         try:
             for i in range(*si.get()):
                 worker="{}/workers/{}".format(os.environ['AAMKS_PROJECT'],i)
