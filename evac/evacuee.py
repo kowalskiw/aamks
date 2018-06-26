@@ -86,7 +86,8 @@ class Evacuee:
             norm_vector = tuple((self.unnorm_vector[0] / self.distance, self.unnorm_vector[1] / self.distance))
             self.velocity = (norm_vector[0] * self.speed, norm_vector[1] * self.speed)
 
-    def update_speed(self, extinction_coefficient):
+    def update_speed(self, optical_density):
+        extinction_coefficient = optical_density * 2.303
         if self.beta_v == 0:
             self.beta_v = 0.00000001
-        self.speed = max(self.max_speed * 0.1, self.max_speed * (1 + self.alpha_v/self.beta_v * extinction_coefficient))
+        self.speed = max(self.max_speed * 0.1, self.max_speed * (1 + self.beta_v/self.alpha_v * extinction_coefficient))

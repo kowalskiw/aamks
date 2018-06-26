@@ -141,6 +141,7 @@ class CfastMcarlo():
 
 
 # }}}
+
     def _draw_window_opening(self,outdoor_temp): # {{{
         ''' 
         Windows are opened / closed based on outside temperatures but even
