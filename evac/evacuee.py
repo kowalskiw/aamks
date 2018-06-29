@@ -29,7 +29,7 @@ class Evacuee:
 
         self.alpha_v = alpha_v
         self.beta_v = beta_v
-        self.max_speed = v_speed
+        self.max_speed = h_speed
 
         logging.basicConfig(filename='aamks.log', level=logging.DEBUG,
                             format='%(asctime)s %(levelname)s: %(message)s')
