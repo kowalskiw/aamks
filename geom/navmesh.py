@@ -103,7 +103,8 @@ class NavMesh:
         # Builds edges as a combination of vertices of the triangle
         edges = []
         for i in vertices:
-            as_tuple = [tuple(n) for n in self.points[i]]
+            as_tuple= []
+            [as_tuple.append(self.points[n]) for n in i]
             edges.append(list(combinations(as_tuple, r=2)))
 
         # Calculates a central point of the edge and creates dict of portals where key is the central point of edge and
@@ -162,7 +163,7 @@ class NavMesh:
         """
         start_vertex = []
         for i in vertices:
-            s = Simplex(points[i])
+            s = Simplex(self.points[i])
             if s.in_simplex(point):
                 x = list(combinations(s.coords, r=2))
         for i in x:
@@ -338,51 +339,51 @@ class NavMesh:
         return road_map
 
 
-n = NavMesh()
-# Transform geom.json file into set of points and obstacles.
-points, obst = n.import_data()
-n.points = points
-
-# Triangulation of the set of points
-ver = n.triangle()
-plt.triplot(points[:, 0], points[:, 1], ver, linewidth=3.0)
-plt.plot(points[:, 0], points[:, 1], 'o')
-
-# Removing triangles incorporated in obstacles
-ver1 = n.remove_obstacles_tri(ver, obst)
-#plt.triplot(points[:, 0], points[:, 1], ver1)
+#n = NavMesh()
+## Transform geom.json file into set of points and obstacles.
+#points, obst = n.import_data()
+#n.points = points
+#
+## Triangulation of the set of points
+#ver = n.triangle()
+#plt.triplot(points[:, 0], points[:, 1], ver, linewidth=3.0)
 #plt.plot(points[:, 0], points[:, 1], 'o')
+#
+## Removing triangles incorporated in obstacles
+#ver1 = n.remove_obstacles_tri(ver, obst)
+##plt.triplot(points[:, 0], points[:, 1], ver1)
+##plt.plot(points[:, 0], points[:, 1], 'o')
+#
+## Calculates portals from triplet vertices
+#n.calculate_portals(ver1)
+#
+#n.add_portals_to_graph()
+#
+#origin = (1300, 900)
+#target=(2890, 244)
+#starts = n.find_closest_edge(origin, ver)
+#shx = n.find_shortest_path(origin=origin, target=target, midpoinds=starts)
+#
+#n.mid_points = shx
+#
+#portals = n.order_portals(shx)
+## portals.append(tuple([tuple(n.mid_points[-1]), tuple(n.mid_points[-1])]))
+#left = []
+#right = []
+#for i in portals:
+#    left.append(i[0])
+#    right.append(i[1])
+#
+#
+#funnel = n.funnel(portals, origin)
 
-# Calculates portals from triplet vertices
-n.calculate_portals(ver1)
-
-n.add_portals_to_graph()
-
-origin = (1300, 900)
-target=(2890, 244)
-starts = n.find_closest_edge(origin, ver)
-shx = n.find_shortest_path(origin=origin, target=target, midpoinds=starts)
-
-n.mid_points = shx
-
-portals = n.order_portals(shx)
-# portals.append(tuple([tuple(n.mid_points[-1]), tuple(n.mid_points[-1])]))
-left = []
-right = []
-for i in portals:
-    left.append(i[0])
-    right.append(i[1])
-
-
-funnel = n.funnel(portals, origin)
-
-x, y = zip(*funnel)
-plt.plot(x, y, linewidth=3.0, color='m')
-x, y = zip(*shx)
-#plt.plot(x, y, linewidth=3.0, color='r')
-x, y = zip(*left)
-#plt.plot(x, y, linewidth=3.0, color = 'y')
-x, y = zip(*right)
-#plt.plot(x, y, linewidth=3.0, color = 'black')
-
-plt.show()
+#x, y = zip(*funnel)
+#plt.plot(x, y, linewidth=3.0, color='m')
+#x, y = zip(*shx)
+##plt.plot(x, y, linewidth=3.0, color='r')
+#x, y = zip(*left)
+##plt.plot(x, y, linewidth=3.0, color = 'y')
+#x, y = zip(*right)
+##plt.plot(x, y, linewidth=3.0, color = 'black')
+#
+#plt.show()
