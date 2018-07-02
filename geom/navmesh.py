@@ -9,6 +9,7 @@ from pyhull.delaunay import DelaunayTri
 from pyhull.simplex import Simplex
 from shapely.geometry import Polygon
 from shapely.geometry import box
+from math import degrees
 
 
 class NavMesh:
@@ -18,13 +19,14 @@ class NavMesh:
         self.G = nx.Graph()
         self.points = []
         self.mid_points = []
-        self.evacuee_size = 40
+        self.evacuee_size = 4
         self.origin = None
+        self.portals_n = []
 
 
     def import_data(self):
         """
-        The function transforms data from goem.json file creating the set of points and set of cuboids obstacles.
+        ehe function transforms data from goem.json file creating the set of points and set of cuboids obstacles.
         :return: Set of points and obstacles.
         """
         with open('geom.json', 'r') as f:
@@ -44,7 +46,7 @@ class NavMesh:
             obst.append(box(min(x), min(y), max(x), max(y)))
         return points, obst
 
-    def remove_duplicate_points(point_set):
+    def remove_duplicate_points(self, point_set):
         """
         Removes duplicates from points set
         :param point_set: set of points from obstacles
@@ -124,7 +126,6 @@ class NavMesh:
         """
         for i in self.portals:
             self.G.add_edges_from(list(combinations(i, r=2)))
-            print(list(combinations(i, r=2)), "\n")
 
     def order_portals(self, path):
         """
@@ -203,17 +204,16 @@ class NavMesh:
         else:
             node = 1
 
-        edge_node = self.portals[current_ind][node]
+        edge_node = self.portals_n[current_ind][node]
 
         while i < len(self.portals):
-            if self.portals[i][node] != self.portals[current_ind][node]:
-                edge_node = self.portals[i][node]
+            if self.portals_n[i][node] != self.portals_n[current_ind][node]:
+                edge_node = self.portals_n[i][node]
                 break
             i += 1
         return edge_node
 
-    @staticmethod
-    def normalize(apex, point):
+    def normalize(self, apex, point):
         """
         Normalises vector defined by two points. Mosty vector is defined from apex to left or right leg.
         :param apex: First point of apex.
@@ -301,7 +301,9 @@ class NavMesh:
         s_relation = self.vector_calculi(apex, l_portal, r_portal)
         angle = s_relation['dot_prod']
 
+
         for i in range(len(portals)):
+            print('L:',l_portal, 'R:',r_portal, 'A:',apex, degrees(angle))
 
             # Checks whether edges is defined by other point for left leg.
             if l_portal != portals[i][0]:
