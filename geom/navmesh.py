@@ -19,6 +19,8 @@ class NavMesh:
         self.points = []
         self.mid_points = []
         self.evacuee_size = 40
+        self.origin = None
+
 
     def import_data(self):
         """
@@ -42,7 +44,6 @@ class NavMesh:
             obst.append(box(min(x), min(y), max(x), max(y)))
         return points, obst
 
-    @staticmethod
     def remove_duplicate_points(point_set):
         """
         Removes duplicates from points set
@@ -55,8 +56,7 @@ class NavMesh:
         list_tmp = set(list_tmp)
         return [list(n) for n in list_tmp]
 
-    @staticmethod
-    def midpoint(segment):
+    def midpoint(self, segment):
         """
         Finds the middle points of the edges
         :param segment: edge
@@ -64,13 +64,12 @@ class NavMesh:
         """
         return (segment[0][0] + segment[1][0]) / 2, (segment[0][1] + segment[1][1]) / 2
 
-    @staticmethod
-    def triangle():
+    def triangle(self):
         """
         Does a triangulation. From a set of points creates a triangulation
         :return: Vertices of the triangles
         """
-        tri = DelaunayTri(points)
+        tri = DelaunayTri(self.points)
         print(list(tri))
         return tri.vertices
 
@@ -125,6 +124,7 @@ class NavMesh:
         """
         for i in self.portals:
             self.G.add_edges_from(list(combinations(i, r=2)))
+            print(list(combinations(i, r=2)), "\n")
 
     def order_portals(self, path):
         """
@@ -138,7 +138,7 @@ class NavMesh:
         sign = None
         for i in range(len(path)):
             if i == 0:
-                sign = self.vector_calculi(origin, self.portals_with_centres[path[i]][0], self.portals_with_centres[path[i]][1])
+                sign = self.vector_calculi(self.origin, self.portals_with_centres[path[i]][0], self.portals_with_centres[path[i]][1])
                 if sign['cross_prod'] >= 0:
                     portals.append(self.portals_with_centres[path[i]])
                 else:
@@ -203,11 +203,11 @@ class NavMesh:
         else:
             node = 1
 
-        edge_node = portals[current_ind][node]
+        edge_node = self.portals[current_ind][node]
 
         while i < len(self.portals):
-            if portals[i][node] != portals[current_ind][node]:
-                edge_node = portals[i][node]
+            if self.portals[i][node] != self.portals[current_ind][node]:
+                edge_node = self.portals[i][node]
                 break
             i += 1
         return edge_node
@@ -257,20 +257,20 @@ class NavMesh:
         else:
             node = 1
 
-        next_node = portals[index][node]
-        prev_node = portals[index][node]
-        apex_point = portals[index][node]
+        next_node = self.portals[index][node]
+        prev_node = self.portals[index][node]
+        apex_point = self.portals[index][node]
 
         while i < len(self.portals):
-            if portals[i][node] != apex_point:
-                next_node = portals[i][node]
+            if self.portals[i][node] != apex_point:
+                next_node = self.portals[i][node]
                 break
             i += 1
 
         i = index
         while i > -1:
-            if portals[i][node] != apex_point:
-                prev_node = portals[i][node]
+            if self.portals[i][node] != apex_point:
+                prev_node = self.portals[i][node]
                 break
             i -= 1
 
