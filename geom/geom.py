@@ -28,7 +28,8 @@ class Geom():
         self.json=Json()
         self.conf=self.json.read("{}/conf_aamks.json".format(os.environ['AAMKS_PROJECT']))
         self._make_elem_counter()
-        self._geometry2sqlite(self._geometry_reader())
+        self._geometry_reader()
+        self._geometry2sqlite()
         self._init_helper_variables()
         self._init_dd_geoms()
         self._make_fake_wells()
@@ -44,10 +45,11 @@ class Geom():
         self._add_names_to_vents_from_to()
         self._calculate_sills()
         self._auto_detectors_and_sprinklers()
-        self._rooms_into_obstacles()
+        self._create_obstacles()
         self.make_vis('Create obstacles')
         self._assert_faces_ok()
         self._assert_room_has_door()
+        #self.s.dumpall()
 # }}}
 
     def _floors_details(self):# {{{
@@ -65,13 +67,17 @@ class Geom():
             miny=self.s.query("SELECT min(y0) AS miny FROM aamks_geom WHERE floor=?", (floor,))[0]['miny']
             maxx=self.s.query("SELECT max(x1) AS maxx FROM aamks_geom WHERE floor=?", (floor,))[0]['maxx']
             maxy=self.s.query("SELECT max(y1) AS maxy FROM aamks_geom WHERE floor=?", (floor,))[0]['maxy']
+            z0=self.s.query("SELECT z0 FROM aamks_geom WHERE floor=?", (floor,))[0]['z0']
 
-            width=maxx-minx
-            height=maxy-miny
+            width= maxx - minx
+            height= maxy - miny
+
+            center=(minx + int(width/2), miny + int(height/2), z0)
+
             animation_scale=round(min(1600/width,800/height)*0.95, 2) # 0.95 is canvas padding
             animation_translate=[ int(maxx-0.5*width), -int(maxy-0.5*height) ]
 
-            values[floor]=OrderedDict([('width', width) , ('height', height) , ('minx', minx) , ('miny', miny) , ('maxx', maxx) , ('maxy', maxy) , ('animation_scale', animation_scale), ('animation_translate',  animation_translate)])
+            values[floor]=OrderedDict([('width', width) , ('height', height) , ('z', z0), ('center', center), ('minx', minx) , ('miny', miny) , ('maxx', maxx) , ('maxy', maxy) , ('animation_scale', animation_scale), ('animation_translate',  animation_translate)])
         self.s.query("CREATE TABLE floors(json)")
         self.s.query('INSERT INTO floors VALUES (?)', (json.dumps(values),))
 # }}}
@@ -82,17 +88,16 @@ class Geom():
         '''
 
         try:
-            geometry_data=self.json.read("{}/cad.json".format(os.environ['AAMKS_PROJECT']))
+            self.geometry_data=self.json.read("{}/cad.json".format(os.environ['AAMKS_PROJECT']))
         except:
             InkscapeReader()
-            geometry_data=self.json.read("{}/svg.json".format(os.environ['AAMKS_PROJECT']))
+            self.geometry_data=self.json.read("{}/svg.json".format(os.environ['AAMKS_PROJECT']))
 
-        return geometry_data
 # }}}
-    def _geometry2sqlite(self,geometry_data):# {{{
+    def _geometry2sqlite(self):# {{{
         ''' 
         Parse geometry and place geoms in sqlite. The lowest floor is always 0.
-        The geometry_data example for floor("0"):
+        The self.geometry_data example for floor("0"):
 
             "0": [
                 "ROOM": [
@@ -111,22 +116,28 @@ class Geom():
         '''
 
         data=[]
-        for floor,gg in geometry_data.items():
+        for floor,gg in self.geometry_data.items():
             for k,arr in gg.items():
                 for v in arr:
-                    v[0]=[ int(i*100) for i in v[0] ]
-                    v[1]=[ int(i*100) for i in v[1] ]
-                    width= v[1][0]-v[0][0]
-                    depth= v[1][1]-v[0][1]
-                    height=v[1][2]-v[0][2]
-                    data.append(self._prepare_geom_record(k,v,width,depth,height,floor))
+                    p0=[ int(i*100) for i in v[0] ]
+                    p1=[ int(i*100) for i in v[1] ]
+                    width= p1[0]-p0[0]
+                    depth= p1[1]-p0[1]
+                    height=p1[2]-p0[2]
+                    record=self._prepare_geom_record(k,[p0,p1],width,depth,height,floor)
+                    if record != False:
+                        data.append(record)
         self.s.query("CREATE TABLE aamks_geom(name,floor,global_type_id,hvent_room_seq,vvent_room_seq,type_pri,type_sec,type_tri,x0,y0,z0,width,depth,height,cfast_width,sill,face,face_offset,vent_from,vent_to,material_ceiling,material_floor,material_wall,sprinkler,detector,is_vertical,vent_from_name,vent_to_name, how_much_open, room_area, x1, y1, z1, center_x, center_y, center_z, fire_model_ignore)")
         self.s.executemany('INSERT INTO aamks_geom VALUES ({})'.format(','.join('?' * len(data[0]))), data)
 #}}}
     def _prepare_geom_record(self,k,v,width,depth,height,floor):# {{{
         ''' Format a record for sqlite. Hvents get fixed width 4 cm '''
+        # OBST
+        if k in ('OBST'):
+            return False
+
         # COMPA
-        if k in ('ROOM', 'COR', 'HALL', 'STAI'):      
+        elif k in ('ROOM', 'COR', 'HALL', 'STAI'):      
             type_pri='COMPA'
             type_tri=''
         
@@ -137,7 +148,7 @@ class Geom():
             type_tri=''
         
         # HVENT  
-        else:                               
+        elif k in ('D', 'C', 'E', 'HOLE', 'W'): 
             width=max(width,4)
             depth=max(depth,4)
             type_pri='HVENT'
@@ -150,7 +161,7 @@ class Geom():
         global_type_id=self._elem_counter[type_pri]
         name='{}_{}'.format(k[0], global_type_id)
 
-        #data.append('name' , 'floor' , 'global_type_id' , 'hvent_room_seq' , 'vvent_room_seq' , 'type_pri' , 'type_sec' , 'type_tri' , 'x0'    , 'y0'    , 'z0'    , 'width' , 'depth' , 'height' , 'cfast_width' , 'sill' , 'face' , 'face_offset' , 'vent_from' , 'vent_to' , 'material_ceiling'            , 'material_floor'            , 'material_wall'            , 'sprinkler' , 'detector' , 'is_vertical' , 'vent_from_name' , 'vent_to_name' , 'how_much_open' , 'room_area' , 'x1' , 'y1' , 'z1' , 'center_x' , 'center_y' , 'center_z' , 'fire_model_ignore')
+        #data.append('name' , 'floor' , 'global_type_id' , 'hvent_room_seq' , 'vvent_room_seq' , 'type_pri' , 'type_sec' , 'type_tri' , 'x0'    , 'y0'    , 'z0'    , 'width' , 'depth' , 'height' , 'cfast_width' , 'sill' , 'face' , 'face_offset' , 'vent_from' , 'vent_to' , 'material_ceiling'                              , 'material_floor'                              , 'material_wall'                              , 'sprinkler' , 'detector' , 'is_vertical' , 'vent_from_name' , 'vent_to_name' , 'how_much_open' , 'room_area' , 'x1' , 'y1' , 'z1' , 'center_x' , 'center_y' , 'center_z' , 'fire_model_ignore')
         return (name        , floor   , global_type_id   , None             , None             , type_pri   , k          , type_tri   , v[0][0] , v[0][1] , v[0][2] , width   , depth   , height   , None          , None   , None   , None          , None        , None      , self.conf['characteristic']['material_ceiling'] , self.conf['characteristic']['material_floor'] , self.conf['characteristic']['material_wall'] , 0           , 0          , None          , None             , None           , None            , None        , None , None , None , None       , None       , None       , 0)
 
 # }}}
@@ -169,6 +180,12 @@ class Geom():
         circles that are written to on top of our geoms. Useful for developing
         and debugging features. Must come early, because visualization depends
         on it. 
+
+        Procedure:  
+            * z=self.json.read('{}/dd_geoms.json'.format(os.environ['AAMKS_PROJECT']))
+            *   z["0"]['circles'].append({ "xy": (i['center_x'], i['center_y']),"radius": 200, "fillColor": "#fff" , "opacity": 0.3 } )
+            *   z["0"]['circles'].append({ "xy": (i['center_x'], i['center_y']),"radius": 200, "fillColor": "#fff" , "opacity": 0.3 } )
+            * self.json.write(z, '{}/dd_geoms.json'.format(os.environ['AAMKS_PROJECT']))
         '''
 
         z=dict()
@@ -179,6 +196,8 @@ class Geom():
             z[floor]['circles']=[]         
             z[floor]['texts']=[]           
             z[floor]['rectangles']=[]      
+            for i in self.s.query("SELECT * FROM aamks_geom WHERE type_tri='DOOR' AND floor=?", (floor,)): 
+                z[floor]['circles'].append({ "xy": (i['center_x'], i['center_y']) , "radius": 200             , "fillColor": "#fff" , "opacity": 0.3 } )
 
             # Example usage anywhere inside aamks:
 
@@ -186,7 +205,6 @@ class Geom():
             # z["0"]['rectangles'].append( { "xy": (1000 , 1000) , "width": 200             , "depth": 300        , "strokeColor": "#fff" , "strokeWidth": 2  , "fillColor": "#f80" , "opacity": 0.7 } )
             # z["0"]['rectangles'].append( { "xy": (0    , 0)    , "width": 200              , "depth": 200        , "strokeColor": "#fff" , "strokeWidth": 2  , "fillColor": "#f80" , "opacity": 0.7 } )
             # z["0"]['lines'].append(      { "xy": (2000 , 200)  , "x1": 3400               , "y1": 500           , "strokeColor": "#fff" , "strokeWidth": 2  , "opacity": 0.7 } )
-            # z["0"]['circles'].append(    { "xy": (1500 , 1500) , "radius": 80             , "fillColor": "#fff" , "opacity": 0.3 } )
             # z["0"]['texts'].append(      { "xy": (1000 , 1000) , "content": "(1000x1000)" , "fontSize": 400      , "fillColor":"#06f"    , "opacity":0.7 } )
             # self.json.write(z, '{}/dd_geoms.json'.format(os.environ['AAMKS_PROJECT']))
 
@@ -240,8 +258,6 @@ class Geom():
             self._id2compa_name[v['global_type_id']]=v['name']
         self._id2compa_name[self.outside_compa]='outside'
 
-        self.s.query("CREATE TABLE id2compa(json)")
-        self.s.query('INSERT INTO id2compa VALUES (?)', (json.dumps(self._id2compa_name),))
 # }}}
     def _add_names_to_vents_from_to(self):# {{{
         ''' 
@@ -264,9 +280,11 @@ class Geom():
         the needed 'relative 0' for the calcuation. 
         '''
 
+        update=[]
         for v in self.s.query("SELECT global_type_id, z0, vent_from  FROM aamks_geom WHERE type_pri='HVENT' ORDER BY name"): 
             floor_baseline=self.s.query("SELECT z0 FROM aamks_geom WHERE global_type_id=? AND type_pri='COMPA'", (v['vent_from'],))[0]['z0']
-            self.s.query("UPDATE aamks_geom SET sill=? WHERE type_pri='HVENT' AND global_type_id=?", (v['z0']-floor_baseline, v['global_type_id']))
+            update.append((v['z0']-floor_baseline, v['global_type_id']))
+        self.s.executemany("UPDATE aamks_geom SET sill=? WHERE type_pri='HVENT' AND global_type_id=?", update)
 
 # }}}
     def _auto_detectors_and_sprinklers(self):# {{{
@@ -307,13 +325,18 @@ class Geom():
         for geometry, HVENTS have their cfast_width always along the wall
         '''
 
-        for v in self.s.query("SELECT * from aamks_geom WHERE type_pri='HVENT' order by name"):
-            if v['width'] > v['depth']:
-                self.s.query("UPDATE aamks_geom SET is_vertical=0 WHERE name=?" , (v['name']  , ))
-                self.s.query("UPDATE aamks_geom SET cfast_width=? WHERE name=?" , (v['width'] , v['name']))
-            else:
-                self.s.query("UPDATE aamks_geom SET is_vertical=1 WHERE name=?" , (v['name']  , ))
-                self.s.query("UPDATE aamks_geom SET cfast_width=? WHERE name=?" , (v['depth'] , v['name']))
+        # TODO: faster, but the same as previous?
+        self.s.query("UPDATE aamks_geom SET is_vertical=0, cfast_width=width WHERE type_pri='HVENT' AND width > depth ")
+        self.s.query("UPDATE aamks_geom SET is_vertical=1, cfast_width=depth WHERE type_pri='HVENT' AND width < depth ")
+
+        # for v in self.s.query("SELECT * from aamks_geom WHERE type_pri='HVENT' order by name"):
+        #     print(v['width'], v['depth'])
+        #     if v['width'] > v['depth']:
+        #         self.s.query("UPDATE aamks_geom SET is_vertical=0 WHERE name=?" , (v['name']  , ))
+        #         self.s.query("UPDATE aamks_geom SET cfast_width=? WHERE name=?" , (v['width'] , v['name']))
+        #     else:
+        #         self.s.query("UPDATE aamks_geom SET is_vertical=1 WHERE name=?" , (v['name']  , ))
+        #         self.s.query("UPDATE aamks_geom SET cfast_width=? WHERE name=?" , (v['depth'] , v['name']))
 # }}}
     def _get_faces(self):# {{{
         ''' 
@@ -408,12 +431,14 @@ class Geom():
                     if vent_poly.intersection(compa_poly).length > 4:
                         vc_intersections[vent_id].append(compa_id)
 
+        update=[]
         for vent_id,v in vc_intersections.items():
             v=sorted(v)
             v.append(self.outside_compa)
             if len(v) not in (2,3):
                 self.make_vis('Door intersects no rooms or more than 2 rooms.', vent_id)
-            self.s.query("UPDATE aamks_geom SET vent_from=?, vent_to=? where global_type_id=? and type_pri='HVENT'", (v[0],v[1],vent_id))
+            update.append((v[0], v[1], vent_id))
+        self.s.executemany("UPDATE aamks_geom SET vent_from=?, vent_to=? where global_type_id=? and type_pri='HVENT'", update)
 
 # }}}
     def _find_vertical_intersections(self):# {{{
@@ -441,17 +466,42 @@ class Geom():
                     if vent_poly.intersection(compa_poly).length > 4:
                         vc_intersections[vent_id].append(compa_id)
 
+        update=[]
         for vent_id,v in vc_intersections.items():
             v=sorted(v)
             v.append(self.outside_compa)
             if len(v) not in (2,3):
                 self.make_vis('Door intersects no rooms or more than 2 rooms.', vent_id)
-            self.s.query("UPDATE aamks_geom SET vent_to=?, vent_from=? where global_type_id=? and type_pri='VVENT'", (v[0],v[1],vent_id))
+            update.append((v[0], v[1], vent_id))
+        self.s.executemany("UPDATE aamks_geom SET vent_to=?, vent_from=? where global_type_id=? and type_pri='VVENT'", update)
 
 # }}}
 
 # OBSTACLES
-    def _rooms_into_obstacles(self):# {{{
+    def _create_obstacles(self):# {{{
+        ''' 
+        Geometry may contain obstacles to model machines, FDS walls, bookcases,
+        etc. Obstacles are not visible in CFAST, since they don't belong to
+        aamks_geom table. 
+        '''
+
+        data=OrderedDict()
+        data['points']=OrderedDict()
+        data['named']=OrderedDict()
+        for floor,gg in self.geometry_data.items():
+            data['points'][floor]=[]
+            data['named'][floor]=[]
+            boxen=[]
+            for v in gg['OBST']:
+                boxen.append(box(int(v[0][0]*100), int(v[0][1]*100), int(v[1][0]*100), int(v[1][1]*100)))
+            boxen+=self._rooms_into_boxen(floor)
+            data['named'][floor]=self._boxen_into_rectangles(boxen)
+            for i in boxen:
+                data['points'][floor].append([(int(x),int(y)) for x,y in i.exterior.coords])
+        self.s.query("CREATE TABLE obstacles(json)")
+        self.s.query("INSERT INTO obstacles VALUES (?)", (json.dumps(data),))
+#}}}
+    def _rooms_into_boxen(self,floor):# {{{
         ''' 
         For a roomX we create a roomX_ghost, we move it by wall_width, which
         must match the width of hvents. Then we create walls via logical
@@ -463,61 +513,45 @@ class Geom():
         '''
 
         wall_width=4
-        rectangles=OrderedDict()
-        as_points=OrderedDict()
-        data=OrderedDict()
-        for floor in self.floors:
-            walls=[]
-            for i in self.s.query("SELECT * FROM aamks_geom WHERE floor=? AND type_pri='COMPA' ORDER BY name", (floor,)):
-                walls.append((i['x0']+wall_width , i['y0']            , i['x0']+i['width']            , i['y0']+wall_width)                )
-                walls.append((i['x0']+i['width'] , i['y0']            , i['x0']+i['width']+wall_width , i['y0']+i['depth']+wall_width)     )
-                walls.append((i['x0']+wall_width , i['y0']+i['depth'] , i['x0']+i['width']            , i['y0']+i['depth']+wall_width)     )
-                walls.append((i['x0']            , i['y0']            , i['x0']+wall_width            , i['y0']+i['depth']+wall_width)     )
-            walls_polygons=([box(ii[0],ii[1],ii[2],ii[3]) for ii in set(walls)])
+        walls=[]
+        for i in self.s.query("SELECT * FROM aamks_geom WHERE floor=? AND type_pri='COMPA' ORDER BY name", (floor,)):
+            walls.append((i['x0']+wall_width , i['y0']            , i['x0']+i['width']            , i['y0']+wall_width)                )
+            walls.append((i['x0']+i['width'] , i['y0']            , i['x0']+i['width']+wall_width , i['y0']+i['depth']+wall_width)     )
+            walls.append((i['x0']+wall_width , i['y0']+i['depth'] , i['x0']+i['width']            , i['y0']+i['depth']+wall_width)     )
+            walls.append((i['x0']            , i['y0']            , i['x0']+wall_width            , i['y0']+i['depth']+wall_width)     )
+        walls_polygons=([box(ii[0],ii[1],ii[2],ii[3]) for ii in set(walls)])
 
-            doors_polygons=[]
-            for i in self.s.query("SELECT * FROM aamks_geom WHERE floor=? AND type_tri='DOOR' ORDER BY name", (floor,)):
-                doors_polygons.append(box(i['x0'], i['y0'], i['x0']+i['width'], i['y0']+i['depth']))
-                
-            boxen=[]
-            for wall in walls_polygons:
-                for door in doors_polygons:
-                    if wall.intersection(door).area > wall_width**2:
-                        wall=wall.difference(door)
-                if isinstance(wall, MultiPolygon):
-                    for i in polygonize(wall):
-                        boxen.append(i)
-                elif isinstance(wall, Polygon):
-                    boxen.append(wall)
-
-            obstacles=[]
-            for b in boxen:
-                obstacles.append([(int(i[0]), int(i[1])) for i in list(b.exterior.coords)[0:4]])
-            rectangles[floor]=self._obstacles_into_rectangles(obstacles)
-            as_points[floor]=obstacles
-            data['points']=as_points
-            data['named']=rectangles
-        self.s.query("CREATE TABLE obstacles(json)")
-        self.s.query("INSERT INTO obstacles VALUES (?)", (json.dumps(data),))
+        doors_polygons=[]
+        for i in self.s.query("SELECT * FROM aamks_geom WHERE floor=? AND type_tri='DOOR' ORDER BY name", (floor,)):
+            doors_polygons.append(box(i['x0'], i['y0'], i['x0']+i['width'], i['y0']+i['depth']))
+            
+        boxen=[]
+        for wall in walls_polygons:
+            for door in doors_polygons:
+                if wall.intersection(door).area > wall_width**2:
+                    wall=wall.difference(door)
+            if isinstance(wall, MultiPolygon):
+                for i in polygonize(wall):
+                    boxen.append(i)
+            elif isinstance(wall, Polygon):
+                boxen.append(wall)
+        return boxen 
 # }}}
-    def _obstacles_into_rectangles(self,obstacles):# {{{
+    def _boxen_into_rectangles(self,boxen):# {{{
         ''' 
-        Transform 4-points-obstacles:
-            [(x0,y0), (x1,y1), (x2,y2), (x3,y3)] 
-        into rectangles:
+        Transform shapely boxen into rectangles for paperjs visualization:
             [(x0,y0,width,height)]
         '''
 
         rectangles=[]
-        for i in obstacles:
-            k=list(zip(*i))
+
+        for i in boxen:
+            m=i.bounds
             coords=OrderedDict()
-            coords["x0"]=min(k[0])
-            coords["y0"]=min(k[1]) 
-            coords["x1"]=max(k[0])
-            coords["y1"]=max(k[1]) 
-            coords["width"]=max(k[0]) - min(k[0])
-            coords["depth"]=max(k[1]) - min(k[1]) 
+            coords["x0"]=int(m[0])
+            coords["y0"]=int(m[1])
+            coords["width"]=int(m[2]-m[0])
+            coords["depth"]=int(m[3]-m[1])
             rectangles.append(coords)
 
         return rectangles
