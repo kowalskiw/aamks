@@ -2,26 +2,29 @@ import json
 import math
 from itertools import combinations
 
-import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
 from pyhull.delaunay import DelaunayTri
 from pyhull.simplex import Simplex
 from shapely.geometry import Polygon
 from shapely.geometry import box
+from numpy import arccos
 from math import degrees
 
 
 class NavMesh:
-    def __init__(self):
+    def __init__(self, points, triangles):
         self.portals_with_centres = dict()
+        self.tri_list = triangles
         self.portals = []
         self.G = nx.Graph()
-        self.points = []
+        self.points = points
         self.mid_points = []
         self.evacuee_size = 4
         self.origin = None
         self.portals_n = []
+        self.calculate_portals(self.tri_list)
+        self.add_portals_to_graph()
 
 
     def import_data(self):
@@ -139,7 +142,7 @@ class NavMesh:
         sign = None
         for i in range(len(path)):
             if i == 0:
-                sign = self.vector_calculi(self.origin, self.portals_with_centres[path[i]][0], self.portals_with_centres[path[i]][1])
+                sign = self.vector_calculi(self.origin, self.portals_with_centres[path[i]][0], self.portals_with_centres[path[i]][1], 'AL')
                 if sign['cross_prod'] >= 0:
                     portals.append(self.portals_with_centres[path[i]])
                 else:
@@ -147,7 +150,7 @@ class NavMesh:
                     sign['cross_prod'] = 1
             else:
                 sign_t = self.vector_calculi(path[i - 1], self.portals_with_centres[path[i]][0],
-                                             self.portals_with_centres[path[i]][1])
+                                             self.portals_with_centres[path[i]][1], 'AL')
                 change = sign['cross_prod'] * sign_t['cross_prod']
                 if change < 0:
                     portals.append([self.portals_with_centres[path[i]][1], self.portals_with_centres[path[i]][0]])
@@ -155,7 +158,7 @@ class NavMesh:
                     portals.append(self.portals_with_centres[path[i]])
         return portals
 
-    def find_closest_edge(self, point, vertices):
+    def find_closest_edge(self, point):
         """
         Finds the closest edge of the triangle containing the origin of a evacuee.
         :param point: Point defining the origin of the evacuee.
@@ -163,8 +166,8 @@ class NavMesh:
         :return: Starting portal, edge for the evacuee.
         """
         start_vertex = []
-        for i in vertices:
-            s = Simplex(self.points[i])
+        for i in self.tri_list:
+            s = Simplex([self.points[i[0]], self.points[i[1]], self.points[i[2]]])
             if s.in_simplex(point):
                 x = list(combinations(s.coords, r=2))
         for i in x:
@@ -225,7 +228,7 @@ class NavMesh:
         norm = [v[i] / vmag for i in range(len(v))]
         return norm
 
-    def vector_calculi(self, apex, l_point, r_point):
+    def vector_calculi(self, apex, l_point, r_point, who):
         """
         Calculates cross and dot product of two vectors. The vectors are defined as legs of funnel, between
         apex and left and right nodes vertex.
@@ -239,7 +242,7 @@ class NavMesh:
         r_vec = self.normalize(apex, r_point)
         dot_prod = np.dot(l_vec, r_vec)
         cross_prod = np.cross(l_vec, r_vec)
-        vectors = {"cross_prod": cross_prod, "dot_prod": dot_prod}
+        vectors = {"cross_prod": float(cross_prod), "dot_prod": dot_prod}
         return vectors
 
     def calculate_offset(self, index, orientation):
@@ -257,20 +260,20 @@ class NavMesh:
         else:
             node = 1
 
-        next_node = self.portals[index][node]
-        prev_node = self.portals[index][node]
-        apex_point = self.portals[index][node]
+        next_node = self.portals_n[index][node]
+        prev_node = self.portals_n[index][node]
+        apex_point = self.portals_n[index][node]
 
-        while i < len(self.portals):
-            if self.portals[i][node] != apex_point:
-                next_node = self.portals[i][node]
+        while i < len(self.portals_n):
+            if self.portals_n[i][node] != apex_point:
+                next_node = self.portals_n[i][node]
                 break
             i += 1
 
         i = index
         while i > -1:
-            if self.portals[i][node] != apex_point:
-                prev_node = self.portals[i][node]
+            if self.portals_n[i][node] != apex_point:
+                prev_node = self.portals_n[i][node]
                 break
             i -= 1
 
@@ -298,45 +301,53 @@ class NavMesh:
         r_index = 0
         l_portal = portals[0][0]
         r_portal = portals[0][1]
-        s_relation = self.vector_calculi(apex, l_portal, r_portal)
+        s_relation = self.vector_calculi(apex, l_portal, r_portal, who='F')
+        #print(s_relation)
         angle = s_relation['dot_prod']
+        angle_s = degrees(arccos(angle))
+        l,r = 0,0
 
 
         for i in range(len(portals)):
-            print('L:',l_portal, 'R:',r_portal, 'A:',apex, degrees(angle))
+            #print('L:',l_portal, 'R:',r_portal, 'A:',apex, s_relation)
 
             # Checks whether edges is defined by other point for left leg.
             if l_portal != portals[i][0]:
-                t_relation = self.vector_calculi(apex, portals[i][0], r_portal)
+                t_relation = self.vector_calculi(apex, portals[i][0], r_portal, 'F')
 
                 # Checking whether the leg crosses other leg. When cross product changes sign and dot product
                 # is greater than 0 (in order to omit sign changes of cross product in Pi)
                 if (t_relation['cross_prod'] * s_relation['cross_prod'] < 0) and (t_relation['dot_prod'] >= 0):
+                    l=i
                     apex = r_portal
-                    road_map.append(self.calculate_offset(r_index, 'R'))
+                    #road_map.append(self.calculate_offset(r_index, 'R'))
+                    road_map.append(apex)
                     r_portal = self.find_next_node(r_index, 'R')
-                    angle = self.vector_calculi(apex, l_portal, r_portal)['dot_prod']
+                    angle = self.vector_calculi(apex, l_portal, r_portal, 'F')['dot_prod']
                 else:
                     if t_relation['dot_prod'] >= angle:
                         l_portal = portals[i][0]
                         l_index = i
-                        angle = self.vector_calculi(apex, l_portal, r_portal)['dot_prod']
+                        angle = self.vector_calculi(apex, l_portal, r_portal, 'F')['dot_prod']
 
             # Checks whether edges is defined by other point for left leg.
             if r_portal != portals[i][1]:
-                t_relation = self.vector_calculi(apex, l_portal, portals[i][1])
+                t_relation = self.vector_calculi(apex, l_portal, portals[i][1], 'R')
                 # Checking whether the leg crosses other leg. When cross product changes sign and dot product
                 # is greater than 0 (in order to omit sign changes of cross product in Pi)
                 if (t_relation['cross_prod'] * s_relation['cross_prod'] < 0) and (t_relation['dot_prod'] >= 0):
+                    r = i
                     apex = l_portal
-                    road_map.append(self.calculate_offset(l_index, 'L'))
+                    #road_map.append(self.calculate_offset(l_index, 'L'))
+                    road_map.append(apex)
                     l_portal = self.find_next_node(l_index, 'L')
-                    angle = self.vector_calculi(apex, l_portal, r_portal)['dot_prod']
+                    angle = self.vector_calculi(apex, l_portal, r_portal, 'R')['dot_prod']
                 else:
                     if t_relation['dot_prod'] >= angle:
                         r_portal = portals[i][1]
                         r_index = i
-                        angle = self.vector_calculi(apex, l_portal, r_portal)['dot_prod']
+                        angle = self.vector_calculi(apex, l_portal, r_portal, 'R')['dot_prod']
+            angle_s = degrees(arccos(angle))
         road_map.append(self.mid_points[i])
         return road_map
 

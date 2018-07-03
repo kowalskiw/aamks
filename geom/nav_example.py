@@ -1,8 +1,13 @@
+import matplotlib
 from pandas import DataFrame, read_csv
 import matplotlib.pyplot as plt
+matplotlib.rcParams.update({'font.size': 3})
 from navmesh import NavMesh as nm
+import numpy as np
+import time
 
-df = read_csv('k.csv', delimiter=';')
+
+df = read_csv('nav.csv', delimiter=';')
 #print(df['x1'])
 points=list()
 for i in range(len(df['x1'])):
@@ -19,26 +24,22 @@ for i in range(len(df['x1'])):
 
 
 x, y = zip(*points)
-plt.triplot(x, y, tri_list, linewidth=3.0)
-plt.plot(x,y, 'o')
-#plt.show()
+plt.triplot(x, y, tri_list, linewidth=1.0)
+plt.plot(x,y, 'o', ms=2)
 
-n = nm()
-n.points = points
-n.calculate_portals(tri_list)
-n.add_portals_to_graph()
-origin = (63.0, 216.0)
+n = nm(points=points, triangles=tri_list)
+
+origin = (4200.0, 400.0)
 plt.plot(origin[0], origin[1], 'o')
 n.origin = origin
 #target= (-305.0, -323.0)
-target= (-495.0, 316.0)
-#starts = n.find_closest_edge(origin, tri_list)
-starts = [(64.0, 216.0)]
+target= (1039.0, 1509.0)
+time_s = time.time()
+starts = n.find_closest_edge(origin)
 shx = n.find_shortest_path(origin=origin, target=target, midpoinds=starts)
 n.mid_points = shx
 portals = n.order_portals(shx)
-n.portals_n = portals
-print(portals)
+n.portals_n = n.portals
 ## portals.append(tuple([tuple(n.mid_points[-1]), tuple(n.mid_points[-1])]))
 left = []
 right = []
@@ -46,14 +47,18 @@ for i in portals:
     left.append(i[0])
     right.append(i[1])
 funnel = n.funnel(portals, origin)
+print("TIME:", time.time() - time_s)
 
 x, y = zip(*funnel)
-plt.plot(x, y, linewidth=3.0, color='m')
-x, y = zip(*shx)
-plt.plot(x, y, linewidth=3.0, color='r')
-x, y = zip(*left)
-plt.plot(x, y, linewidth=3.0, color = 'y')
-x, y = zip(*right)
-plt.plot(x, y, linewidth=3.0, color = 'black')
+plt.plot(x, y, linewidth=1.0, color='m')
+#x, y = zip(*shx)
+#plt.plot(x, y, linewidth=1.0, color='r')
+#x, y = zip(*left)
+#plt.plot(x, y, linewidth=1.0, color = 'y')
+#x, y = zip(*right)
+#plt.plot(x, y, linewidth=1.0, color = 'black')
 #
-plt.show()
+#plt.xticks(np.arange(1000, 4500, 100))
+#plt.yticks(np.arange(0, 2000, 100))
+#plt.grid(True)
+plt.savefig('nav.eps', format='eps')
