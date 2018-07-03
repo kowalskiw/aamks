@@ -42,7 +42,7 @@ class Evacuee:
 
     @property
     def focus(self):
-        #logging.info('Roadmap {}, current goal for visible {}'.format(self.roadmap, self.goal_s))
+        #print('Roadmap {}, current goal for visible {}'.format(self.roadmap, self.goal_s))
         if self.goal_s < 0:
             self.goal_s = 0
         return tuple(self.roadmap[self.goal_s])
@@ -72,6 +72,9 @@ class Evacuee:
         elif state == 's1111':
             self.unnorm_vector = (0, 0)
             self.finished = 0
+        elif state == 's0011':
+            self.goal_g -= 1
+            self.goal_s -= 1
 
     def update_fed(self, fed):
         assert isinstance(fed, float), '%fed is not required type float'
