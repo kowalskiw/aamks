@@ -492,8 +492,13 @@ class Geom():
             data['points'][floor]=[]
             data['named'][floor]=[]
             boxen=[]
-            for v in gg['OBST']:
-                boxen.append(box(int(v[0][0]*100), int(v[0][1]*100), int(v[1][0]*100), int(v[1][1]*100)))
+            # TODO: once cad.json uses 'OBST': [], there's no need to try.
+            try:
+                for v in gg['OBST']:
+                    boxen.append(box(int(v[0][0]*100), int(v[0][1]*100), int(v[1][0]*100), int(v[1][1]*100)))
+            except:
+                pass
+                
             boxen+=self._rooms_into_boxen(floor)
             data['named'][floor]=self._boxen_into_rectangles(boxen)
             for i in boxen:
