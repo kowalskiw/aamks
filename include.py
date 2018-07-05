@@ -2,8 +2,6 @@ from collections import OrderedDict
 import os
 import sys
 import sqlite3
-import psycopg2
-import psycopg2.extras
 import inspect
 import json
 from subprocess import Popen,PIPE
@@ -128,7 +126,7 @@ class Sqlite: # {{{
     def dumpall(self):
         ''' Remember to add all needed sqlite tables here '''
         print("dump() from caller: {}, {}".format(inspect.stack()[1][1], inspect.stack()[1][3]))
-        for i in ('aamks_geom', 'staircaser', 'floors', 'obstacles', 'tessellation'):
+        for i in ('aamks_geom', 'floors', 'obstacles', 'tessellation', 'navmeshes'):
             try:
                 print("\n=======================")
                 print("table:", i)
@@ -144,6 +142,12 @@ class Sqlite: # {{{
 # }}}
 class Psql: # {{{
     def __init__(self):
+        ''' Blender's python doesn't need nor supports psql '''
+
+        import psycopg2
+        import psycopg2.extras
+
+        self._project_name=os.path.basename(os.environ['AAMKS_PROJECT'])
         try:
             self.PSQL=psycopg2.connect("dbname='aamks' user='aamks' host={} password='{}'".format(os.environ['AAMKS_SERVER'], os.environ['AAMKS_PG_PASS']))
             self.psqldb=self.PSQL.cursor(cursor_factory=psycopg2.extras.DictCursor)
