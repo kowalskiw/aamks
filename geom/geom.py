@@ -88,16 +88,16 @@ class Geom():
         '''
 
         try:
-            self.geometry_data=self.json.read("{}/cad.json".format(os.environ['AAMKS_PROJECT']))
+            self.raw_geometry=self.json.read("{}/cad.json".format(os.environ['AAMKS_PROJECT']))
         except:
             InkscapeReader()
-            self.geometry_data=self.json.read("{}/svg.json".format(os.environ['AAMKS_PROJECT']))
+            self.raw_geometry=self.json.read("{}/svg.json".format(os.environ['AAMKS_PROJECT']))
 
 # }}}
     def _geometry2sqlite(self):# {{{
         ''' 
         Parse geometry and place geoms in sqlite. The lowest floor is always 0.
-        The self.geometry_data example for floor("0"):
+        The self.raw_geometry example for floor("0"):
 
             "0": [
                 "ROOM": [
@@ -116,7 +116,7 @@ class Geom():
         '''
 
         data=[]
-        for floor,gg in self.geometry_data.items():
+        for floor,gg in self.raw_geometry.items():
             for k,arr in gg.items():
                 for v in arr:
                     p0=[ int(i*100) for i in v[0] ]
@@ -131,7 +131,7 @@ class Geom():
         self.s.executemany('INSERT INTO aamks_geom VALUES ({})'.format(','.join('?' * len(data[0]))), data)
 #}}}
     def _prepare_geom_record(self,k,v,width,depth,height,floor):# {{{
-        ''' Format a record for sqlite. Hvents get fixed width 8 cm '''
+        ''' Format a record for sqlite. Hvents get fixed width self._doors_width cm '''
         # OBST
         if k in ('OBST'):
             return False
@@ -480,7 +480,7 @@ class Geom():
         data=OrderedDict()
         data['points']=OrderedDict()
         data['named']=OrderedDict()
-        for floor,gg in self.geometry_data.items():
+        for floor,gg in self.raw_geometry.items():
             data['points'][floor]=[]
             data['named'][floor]=[]
             boxen=[]
