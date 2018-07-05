@@ -47,7 +47,7 @@ class Evacuee:
             self.goal_s = 0
         return tuple(self.roadmap[self.goal_s])
 
-    def update_state(self, goal_s_visible):
+    def update_state(self, goal_s_visible, ped_no):
         assert isinstance(goal_s_visible, bool), 'goal visible must be type bool'
 
         self.unnorm_vector = tuple(map(sub, self.roadmap[self.goal_g], self.position))
@@ -57,7 +57,8 @@ class Evacuee:
         circle = self.distance < self.node_radius
         s_equal_g = self.roadmap[self.goal_s] == self.roadmap[self.goal_g]
         state = 's'+str(int(circle)) + str(int(goal_s_visible)) + str(int(s_equal_g)) + str(int(last_node))
-        #print("State: {}, goes: {}, Looks: {}".format(state, self.roadmap[self.goal_g], self.roadmap[self.goal_s]))
+        #if ped_no == 82:
+            #print("E{}, State: {}, goes: {}, Looks: {}".format(ped_no, state, self.roadmap[self.goal_g], self.roadmap[self.goal_s]))
         if state == 's1110':
             self.goal_s += 1
         elif state == 's1100':
