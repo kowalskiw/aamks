@@ -121,9 +121,9 @@ class Sqlite: # {{{
     def dump_geoms(self,floor):
         print("dump_geom() from caller: {}, {}".format(inspect.stack()[1][1], inspect.stack()[1][3]))
         print()
-        print("name;x0;y0;x1;y1")
-        for i in self.query('SELECT name,x0,y0,x1,y1 FROM aamks_geom WHERE floor=? ORDER BY type_pri,global_type_id', (floor,)):
-            print("{};{};{};{};{}".format(i['name'],i['x0'], i['y0'], i['x1'], i['y1']))
+        print("name;x0;y0;x1;y1,z0,z1")
+        for i in self.query('SELECT name,x0,y0,x1,y1,z0,z1 FROM aamks_geom WHERE floor=? ORDER BY type_pri,global_type_id', (floor,)):
+            print("{};{};{};{};{};{};{}".format(i['name'],i['x0'], i['y0'], i['x1'], i['y1'], i['z0'], i['z1']))
 
     def dumpall(self):
         ''' Remember to add all needed sqlite tables here '''
