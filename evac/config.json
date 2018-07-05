@@ -1,6 +1,6 @@
 {
     "LAYER_HEIGHT": 1.8,
-    "TIME_STEP": 0.1,
+    "TIME_STEP": 0.05,
     "NEIGHBOR_DISTANCE": 70,
     "MAX_NEIGHBOR": 5,
     "TIME_HORIZON": 1,
