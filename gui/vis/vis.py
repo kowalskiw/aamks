@@ -67,7 +67,7 @@ class Vis():
 
         for floor in self._static.keys():
             self._static[floor]['doors']=OrderedDict()
-            for i in self.s.query("SELECT name,x0,y0,center_x,center_y,width,depth,type_sec FROM aamks_geom WHERE floor=? AND type_tri='DOOR' AND type_sec != 'HOLE'", (floor,)):
+            for i in self.s.query("SELECT name,x0,y0,center_x,center_y,width,depth,type_sec FROM aamks_geom WHERE floor=? AND type_tri='DOOR'", (floor,)):
                 self._static[floor]['doors'][i['name']]=i
 # }}}
     def _js_make_obstacles(self):# {{{
