@@ -213,7 +213,7 @@ class Worker:
                 time_frame += 10
             else:
                 time.sleep(1)
-            if time_frame > 320:
+            if time_frame > 520:
                 break
             if prod(array(l)) > 0:
                 break
