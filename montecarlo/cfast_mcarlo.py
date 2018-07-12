@@ -368,6 +368,37 @@ class CfastMcarlo():
         # VVENT AREA, SHAPE, INITIAL_FRACTION
         txt=['!!VVENT,first_comp,second_comp,id,orientation1,height_in,area_in,orientation2,height_out,area_out,flowm3/s,press_l,press_u,release,nix,nix,initial_time,initial_fraction,final_time,final_fraction']
         collect=[]
+
+        collect.append('MVENT,30,68,1,H,3.8,0.06,H,3.8,0.06,0.15,200,300,TIME,,,0,1,0,1,0,0')
+        collect.append('MVENT,40,68,2,H,3.8,0.06,H,3.8,0.06,0.31,200,300,TIME,,,0,1,0,1,0,0')
+        collect.append('MVENT,53,68,3,H,3.8,0.09,H,3.8,0.09,0.34,200,300,TIME,,,0,1,0,1,0,0')
+        collect.append('MVENT,53,68,4,H,3.8,0.09,H,3.8,0.09,0.34,200,300,TIME,,,0,1,0,1,0,0')
+        collect.append('MVENT,53,68,5,H,3.8,0.09,H,3.8,0.09,0.34,200,300,TIME,,,0,1,0,1,0,0')
+        collect.append('MVENT,54,68,6,H,3.8,0.09,H,3.8,0.09,0.34,200,300,TIME,,,0,1,0,1,0,0')
+        collect.append('MVENT,49,68,7,H,3.8,0.09,H,3.8,0.09,0.34,200,300,TIME,,,0,1,0,1,0,0')
+        collect.append('MVENT,49,68,8,H,3.8,0.09,H,3.8,0.09,0.34,200,300,TIME,,,0,1,0,1,0,0')
+        collect.append('MVENT,55,68,9,H,3.8,0.09,H,3.8,0.09,0.34,200,300,TIME,,,0,1,0,1,0,0')
+        collect.append('MVENT,32,68,10,H,3.8,0.09,H,3.8,0.09,0.34,200,300,TIME,,,0,1,0,1,0,0')
+        collect.append('MVENT,25,68,11,H,3.8,0.15,H,3.8,0.15,0.70,200,300,TIME,,,0,1,0,1,0,0')
+        collect.append('MVENT,48,68,12,H,3.8,0.15,H,3.8,0.15,0.70,200,300,TIME,,,0,1,0,1,0,0')
+        collect.append('MVENT,18,68,13,H,3.8,0.15,H,3.8,0.15,0.70,200,300,TIME,,,0,1,0,1,0,0')
+        collect.append('MVENT,12,68,14,H,3.8,0.15,H,3.8,0.15,0.70,200,300,TIME,,,0,1,0,1,0,0')
+        collect.append('MVENT,13,68,15,H,3.8,0.15,H,3.8,0.15,0.70,200,300,TIME,,,0,1,0,1,0,0')
+        collect.append('MVENT,54,68,16,H,3.8,0.15,H,3.8,0.15,0.70,200,300,TIME,,,0,1,0,1,0,0')
+        collect.append('MVENT,42,68,17,H,3.8,0.15,H,3.8,0.15,0.70,200,300,TIME,,,0,1,0,1,0,0')
+        collect.append('MVENT,42,68,18,H,3.8,0.15,H,3.8,0.15,0.70,200,300,TIME,,,0,1,0,1,0,0')
+        collect.append('MVENT,43,68,19,H,3.8,0.15,H,3.8,0.15,0.70,200,300,TIME,,,0,1,0,1,0,0')
+        collect.append('MVENT,68,32,20,H,3.8,0.36,H,3.8,0.36,0.66,200,300,TIME,,,0,1,0,1,0,0')
+        collect.append('MVENT,68,32,21,H,3.8,0.25,H,3.8,0.25,2.18,200,300,TIME,,,0,1,0,1,0,0')
+        collect.append('MVENT,68,65,22,H,3.8,0.14,H,3.8,0.14,0.36,200,300,TIME,,,0,1,0,1,0,0')
+        collect.append('MVENT,68,64,23,H,3.8,0.49,H,3.8,0.49,2.50,200,300,TIME,,,0,1,0,1,0,0')
+        collect.append('MVENT,68,61,24,H,3.8,0.06,H,3.8,0.06,0.31,200,300,TIME,,,0,1,0,1,0,0')
+        collect.append('MVENT,68,49,25,H,3.8,0.36,H,3.8,0.36,0.69,200,300,TIME,,,0,1,0,1,0,0')
+        collect.append('MVENT,68,30,26,H,3.8,0.14,H,3.8,0.14,0.31,200,300,TIME,,,0,1,0,1,0,0')
+        collect.append('MVENT,68,28,27,H,3.8,0.24,H,3.8,0.24,1.08,200,300,TIME,,,0,1,0,1,0,0')
+        collect.append('MVENT,68,47,28,H,3.8,0.36,H,3.8,0.36,1.08,200,300,TIME,,,0,1,0,1,0,0')
+
+
         #collect.append('MVENT,28,35,1,V,2.3,0.48,H,3,0.48,1.7,200,300,TIME,,,60,0,70,1,1,1')
         #collect.append('MVENT,28,35,2,V,2.3,0.48,H,3,0.48,1.7,200,300,TIME,,,60,0,70,1,2.5,1')
         #collect.append('MVENT,35,28,3,V,2.3,0.48,H,3,0.48,1.7,200,300,TIME,,,60,0,70,1,10,1')
