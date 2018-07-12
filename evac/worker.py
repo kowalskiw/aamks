@@ -143,15 +143,10 @@ class Worker:
         floor = self.vars['conf']['FLOORS_DATA'][str(floor)]
 
         for i in floor['EVACUEES'].keys():
-            evacuees.append(Evacuee(origin=tuple(floor['EVACUEES'][i]['ORIGIN']),
-                                    v_speed=floor['EVACUEES'][i]['V_SPEED'],
-                                    h_speed=floor['EVACUEES'][i]['H_SPEED'],
-                                    roadmap=floor['EVACUEES'][i]['ROADMAP'],
-                                    pre_evacuation=floor['EVACUEES'][i][
-                                        'PRE_EVACUATION'],
-                                    alpha_v=floor['EVACUEES'][i]['ALPHA_V'],
-                                    beta_v=floor['EVACUEES'][i]['BETA_V'],
-                                    node_radius=self.config['NODE_RADIUS']))
+            evacuees.append(Evacuee(origin=tuple(floor['EVACUEES'][i]['ORIGIN']), v_speed=floor['EVACUEES'][i]['V_SPEED'],
+                                    h_speed=floor['EVACUEES'][i]['H_SPEED'], roadmap=floor['EVACUEES'][i]['ROADMAP'],
+                                    pre_evacuation=floor['EVACUEES'][i]['PRE_EVACUATION'], alpha_v=floor['EVACUEES'][i]['ALPHA_V'],
+                                    beta_v=floor['EVACUEES'][i]['BETA_V'], node_radius=self.config['NODE_RADIUS']))
 
         e = Evacuees()
         [e.add_pedestrian(i) for i in evacuees]
