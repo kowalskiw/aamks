@@ -274,6 +274,7 @@ class Worker:
     # }}}
 
     def main(self):
+        SendMessage('Worker: {}, sim_id {}'.format(self.host_name, self.sim_id))
         self.get_config()
         self._create_workspace()
         self.get_geom_and_cfast()
