@@ -274,8 +274,8 @@ class Worker:
     # }}}
 
     def main(self):
-        SendMessage('Worker: {}, sim_id {}'.format(self.host_name, self.sim_id))
         self.get_config()
+        SendMessage('Worker: {} start_sim: {}'.format(self.host_name, self.sim_id))
         self._create_workspace()
         self.get_geom_and_cfast()
         self.create_geom_database()
@@ -283,6 +283,7 @@ class Worker:
         self.prepare_simulations()
         self.do_simulation()
         self.send_report()
+        SendMessage('Worker: {} end sim: {}'.format(self.host_name, self.sim_id))
 
     def test(self):
         self.get_config()
@@ -306,6 +307,6 @@ else:
     try:
         w.main()
     except Exception as e:
-        SendMessage(e)
+        SendMessage(str(e))
     else:
         SendMessage("Worker: Alles in grunem bereisch")
