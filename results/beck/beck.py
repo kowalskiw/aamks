@@ -61,7 +61,8 @@ class processDists:
         dcbe = [json.loads(i[0]) for i in results]
         for i in dcbe:
             for value in i.values():
-                wcbe.append(value)
+                if value > 0:
+                    wcbe.append(value+90)
         sns_plot = sns.distplot(wcbe)
 #        plt.xlabel('WCBE [s]')
 #        plt.ylabel('Prawdopodobieństwo')
@@ -252,7 +253,7 @@ class processDists:
         nursing = [2e-4, 5e-6, -0.61, -0.05]
         building = {'other_building': other_building, 'office': office, 'warehouse': warehouse, 'commercial': commercial,
                     'nursing': nursing}
-        b_type = 'commercial'
+        b_type = 'office'
         ignition = building[b_type][0]*(area) ** (building[b_type][2]) + \
                    building[b_type][1] * (area) ** (building[b_type][3])
         return ignition
@@ -327,8 +328,8 @@ p.plot_ccdf()
 p.plot_losses_hist()
 p.plot_pie_fault()
 #print(p.total)
-bar = p.calculate_barrois(20000)*966
-#bar = 10e-6 * 142
+bar = p.calculate_barrois(19268)*153
+#bar = 10e-6 * 1530
 #print(bar)
 #if p.losses_num[4] == 0:
 #    p.losses_num[4] = 1e-12
@@ -337,7 +338,7 @@ fed_f = float('%.3f' % (len(p.losses['dead'])/p.total))
 fed_m = float('%.3f' % (len(p.losses['heavy'])/p.total))
 fed_l = float('%.3f' % (len(p.losses['light'])/p.total))
 fed_n = float('%.3f' % (len(p.losses['neglegible'])/p.total))
-t_kryt = float('%.3f' % (len(p.losses['neglegible'])/p.total))
+t_kryt = float('%.3f' % (len(p.losses['light'])/p.total))
 p_ext = float('%.3f' % 0.17)
 p_tk = float('%.3f' % (p.t_k/p.total))
 
