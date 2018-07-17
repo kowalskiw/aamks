@@ -14,13 +14,13 @@ from subprocess import Popen,call
 from numpy.random import choice
 from numpy.random import uniform
 from numpy.random import normal
-from numpy.random import lognormal
 from numpy.random import binomial
 from numpy.random import gamma
 from numpy.random import triangular
 from numpy.random import seed
 from numpy import array as npa
 from math import sqrt
+from scipy.stats import pareto
 
 from include import Sqlite
 from include import Psql
@@ -109,9 +109,12 @@ class CfastMcarlo():
         middle, then fading on the right. At the end read hrrs at given times.
         '''
 
+        p = pareto(b=0.668, scale=0.775) #'TODO: fire area is a pareto distribution based on PD-7974-7. Still lacks boudaries for room area and vent conditions'
+        fire_area = p.rvs(size=1)[0]
+        if fire_area > 10:
+            fire_area = 10
         i=self.conf['settings']['heat_release_rate']
-        #'TODO:' HRR_PEAK is calculted as each room has 10 m2, by HRRPUA times 10. It should be better address, by choosing room area and vent characteristics
-        hrr_peak=int(triangular(i['hrrpua_min_mode_max'][0], i['hrrpua_min_mode_max'][1], i['hrrpua_min_mode_max'][2]) * 10000)
+        hrr_peak=int(triangular(i['hrrpua_min_mode_max'][0], i['hrrpua_min_mode_max'][1], i['hrrpua_min_mode_max'][2]) * 1000 * fire_area)
         alpha=int(triangular(i['alpha_min_mode_max'][0], i['alpha_min_mode_max'][1], i['alpha_min_mode_max'][2])*1000)
 
         self._psql_log_variable('hrrpeak',hrr_peak/1000)
