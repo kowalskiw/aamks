@@ -6,8 +6,8 @@ from navmesh import NavMesh as nm
 import numpy as np
 import time
 
-
-df = read_csv('k.csv', delimiter=';')
+plt.figure(figsize=(15, 8))
+df = read_csv('nav.csv', delimiter=';')
 #print(df['x1'])
 points=list()
 for i in range(len(df['x1'])):
@@ -24,17 +24,18 @@ for i in range(len(df['x1'])):
 
 
 x, y = zip(*points)
-plt.triplot(x, y, tri_list, linewidth=1.0)
-plt.plot(x,y, 'o', ms=2)
+plt.triplot(x, y, tri_list, linewidth=2.5)
+plt.plot(x,y, 'o', ms=7)
 
 n = nm(points=points, triangles=tri_list)
 
 print(n.portals)
-origin = (-450.0, -450.0)
-plt.plot(origin[0], origin[1], 'o')
+origin = (1300.0, 1500.0)
+#plt.plot(origin[0], origin[1], 'o', color='r', ms=10)
 n.origin = origin
-target= (174.0, 286.0)
 #target= (1039.0, 1509.0)
+target = (4254.0, 39.0)
+#plt.plot(target[0], target[1], 'v', color='r', ms=10)
 time_s = time.time()
 starts = n.find_closest_edge(origin)
 shx = n.find_shortest_path(origin=origin, target=target, midpoinds=starts)
@@ -51,16 +52,16 @@ funnel = n.funnel(portals, origin)
 print("TIME:", time.time() - time_s)
 
 x, y = zip(*funnel)
-plt.plot(x, y, linewidth=1.0, color='m')
+#plt.plot(x, y, linewidth=3.5, color='m')
 x, y = zip(*shx)
-plt.plot(x, y, linewidth=1.0, color='r')
+#plt.plot(x, y, linewidth=3.5, color='r')
 x, y = zip(*left)
-plt.plot(x, y, linewidth=1.0, color = 'y')
+#plt.plot(x, y, linewidth=1.0, color = 'y')
 x, y = zip(*right)
-plt.plot(x, y, linewidth=1.0, color = 'black')
+#plt.plot(x, y, linewidth=1.0, color = 'black')
 #
 #plt.xticks(np.arange(1000, 4500, 100))
 #plt.yticks(np.arange(0, 2000, 100))
 #plt.grid(True)
-#plt.savefig('nav.eps', format='eps')
+plt.savefig('bag.pdf', format='pdf')
 plt.show()
