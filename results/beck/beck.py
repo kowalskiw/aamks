@@ -171,6 +171,8 @@ class processDists:
         for key in self.losses.keys():
             if key == 'neglegible':
                 continue
+            if len(self.losses[key]) == 0:
+                continue 
             dane = ecdf(self.losses[key])
             axs[wykres].plot(sorted(self.losses[key]), 1-dane(sorted(self.losses[key])))
             axs[wykres].set_xlabel('Number of people')
@@ -226,6 +228,8 @@ class processDists:
 
         wykres = 0
         for key in self.losses.keys():
+            if len(self.losses[key]) == 0:
+                continue
             fig = plt.figure()
             plt.hist(self.losses[key], bins=20)
             plt.title(key)
@@ -237,8 +241,8 @@ class processDists:
     def plot_pie_fault(self):
         fig = plt.figure()
         sizes = [len(self.losses['dead']), self.total-len(self.losses['dead'])]
-        labels = 'Failure', 'Success'
-        colors = ['lightcoral', 'lightskyblue']
+        labels = 'Success', 'Failure'
+        colors = ['lightskyblue', 'lightcoral']
         explode = (0.1, 0)
         plt.pie(sizes, explode=explode, labels=labels, colors=colors, autopct='%1.1f%%', shadow=True)
         plt.axis('equal')
@@ -259,12 +263,12 @@ class processDists:
         return ignition
 
     def dcbe_values(self):
-        query = "SELECT count(*) FROM simulations where project = {} AND dcbe_time < 9999".format(
+        query = "SELECT count(*) FROM simulations where project = {} AND dcbe_time < 300".format(
             self.configs['general']['project_id'])
         results = self.query(query)
         lower = results[0][0]/self.total
 
-        query = "SELECT avg(dcbe_time) FROM simulations where project = {} AND dcbe_time < 9999".format(
+        query = "SELECT avg(dcbe_time) FROM simulations where project = {} AND dcbe_time < 300".format(
             self.configs['general']['project_id'])
         results = self.query(query)
         mean = results[0][0]
@@ -277,24 +281,24 @@ class processDists:
         return results[0][0]
 
     def min_height_values(self):
-        query = "SELECT count(*) FROM simulations where project = {} AND min_hgt_compa < 1.0" \
+        query = "SELECT count(*) FROM simulations where project = {} AND min_hgt_cor < 0.5" \
             .format(self.configs['general']['project_id'])
         results = self.query(query)
         lower = results[0][0] / self.total
 
-        query = "SELECT avg(min_hgt_compa) FROM simulations where project = {} AND min_hgt_compa < 1.8" \
+        query = "SELECT avg(min_hgt_compa) FROM simulations where project = {} AND min_hgt_cor < 1.8" \
             .format(self.configs['general']['project_id'])
         results = self.query(query)
         mean = results[0][0]
         return [lower, mean]
 
     def vis_values(self):
-        query = "SELECT count(*) FROM simulations where project = {} AND min_vis_compa < 30".format(
+        query = "SELECT count(*) FROM simulations where project = {} AND min_vis_cor < 30".format(
             self.configs['general']['project_id'])
         results = self.query(query)
         lower = results[0][0] / self.total
 
-        query = "SELECT avg(min_vis_compa) FROM simulations where project = {} AND min_vis_compa < 60".format(
+        query = "SELECT avg(min_vis_compa) FROM simulations where project = {} AND min_vis_cor < 60".format(
             self.configs['general']['project_id'])
         results = self.query(query)
         mean = results[0][0]
@@ -328,7 +332,7 @@ p.plot_ccdf()
 p.plot_losses_hist()
 p.plot_pie_fault()
 #print(p.total)
-bar = p.calculate_barrois(19268)*153
+bar = p.calculate_barrois(19268)*15.3
 #bar = 10e-6 * 1530
 #print(bar)
 #if p.losses_num[4] == 0:
