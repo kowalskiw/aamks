@@ -15,6 +15,7 @@ from include import Json
 import logging
 from math import exp
 from include import Dump as dd
+from include import SendMessage
 
 # }}}
 
@@ -87,9 +88,15 @@ class SmokeQuery:
         ''' Outside is for debugging - should never happen in aamks. '''
         try:
             compa=self._cell2compa[cell]
-        except Exception as e:
-            compa="outside"
-            logging.ERROR("Agent outside needs fixing: {}".format(e))
+        # except Exception as e:
+        #     compa="outside"
+        #     SendMessage('Evacuee in forbidden place. Cell: {}; Query: {}; Exception: {}'.format(cell,query,e))
+        #     logging.ERROR("Agent outside needs fixing: {}".format(e))
+
+        # Cheater mode:
+        except:
+            compa=self.s.query("SELECT name from aamks_geom WHERE type_pri='COMPA' LIMIT 1")[0]['name']
+            SendMessage('Aamks is cheating! Evacuee pretends to be in {}. Cell: {}; Query: {}'.format(compa,cell,query))
 
         return self._compa_conditions[compa]
 # }}}
