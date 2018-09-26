@@ -154,9 +154,9 @@ class EvacEnv:
 
     def get_rset_time(self) -> None:
         exited = self.finished.count(0)
-        logging.info('Time: {}, floor: {}, evacuated: {}'.format(self.get_simulation_time(), self.floor, exited))
+        #logging.info('Time: {}, floor: {}, evacuated: {}'.format(self.get_simulation_time(), self.floor, exited))
         if (exited > len(self.finished) * 0.1) and self.per_9 == 0:
-            self.per_9 = self.current_time
+            self.rset = self.current_time
         if all(x == 0 for x in self.finished) and self.rset == 0:
             self.rset = self.current_time
 
@@ -184,7 +184,7 @@ class EvacEnv:
         time_range = int(time/self.config['TIME_STEP'])
         for step in range(time_range - 100, time_range):
             self.sim.doStep()
-            logging.debug('Simulation step: {}'.format(step))
+            #logging.debug('Simulation step: {}'.format(step))
             self.update_agents_position()
             self.update_state()
             self.update_time()
