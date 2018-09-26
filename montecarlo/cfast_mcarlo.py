@@ -199,7 +199,7 @@ class CfastMcarlo():
     def _draw_sprinkler_triggers(self):# {{{
         mean,std_dev=self.conf['infrastructure']['sprinklers']['trigger_temperature_mean_and_sd']
         zero_or_one=binomial(1,self.conf['infrastructure']['sprinklers']['not_broken_probability'])
-        chosen=round(normal(mean, std_dev),2) * zero_or_one
+        chosen=round(273.00+normal(mean, std_dev),2) * zero_or_one
         self._psql_log_variable('sprinkler',chosen)
         return str(chosen)
 # }}}
@@ -232,12 +232,12 @@ class CfastMcarlo():
 # }}}
     def _section_preamble(self,outdoor_temp):# {{{
         ''' 
-        We use 600 as time, since Cfast will be killed by aamks. 
+        We use simulation_time as upper value, since Cfast will be killed by aamks. 
         '''
 
         txt=(
         'VERSN,7,{}_{}'.format('SIM', self.conf['general']['project_id']),
-        'TIMES,600,-120,10,10',
+        'TIMES,{},-120,10,10'.format(self.conf['general']['simulation_time']),
         'EAMB,{},101300,0'.format(273+outdoor_temp),
         'TAMB,293.15,101300,0,50',
         'DTCHECK,1.E-9,100',
@@ -372,45 +372,7 @@ class CfastMcarlo():
         txt=['!!VVENT,first_comp,second_comp,id,orientation1,height_in,area_in,orientation2,height_out,area_out,flowm3/s,press_l,press_u,release,nix,nix,initial_time,initial_fraction,final_time,final_fraction']
         collect=[]
 
-        collect.append('MVENT,69,76,1,H,2.8,0.06,H,2.8,0.06,0.2,200,300,TIME,,,0,1,0,1,0,0')
-        collect.append('MVENT,69,76,2,H,2.8,0.06,H,2.8,0.06,0.23,200,300,TIME,,,0,1,0,1,0,0')
-        collect.append('MVENT,69,76,3,H,2.8,0.06,H,2.8,0.06,0.23,200,300,TIME,,,0,1,0,1,0,0')
-        collect.append('MVENT,72,76,4,H,2.8,0.08,H,2.8,0.08,0.31,200,300,TIME,,,0,1,0,1,0,0')
-        collect.append('MVENT,70,76,5,H,2.8,0.08,H,2.8,0.08,0.32,200,300,TIME,,,0,1,0,1,0,0')
-        collect.append('MVENT,71,76,6,H,2.8,0.08,H,2.8,0.08,0.32,200,300,TIME,,,0,1,0,1,0,0')
-        collect.append('MVENT,56,76,7,H,2.8,0.08,H,2.8,0.08,0.32,200,300,TIME,,,0,1,0,1,0,0')
-        collect.append('MVENT,56,76,8,H,2.8,0.06,H,2.8,0.06,0.25,200,300,TIME,,,0,1,0,1,0,0')
-        collect.append('MVENT,67,76,9,H,2.8,0.06,H,2.8,0.06,0.25,200,300,TIME,,,0,1,0,1,0,0')
-        collect.append('MVENT,67,76,10,H,2.8,0.06,H,2.8,0.06,0.25,200,300,TIME,,,0,1,0,1,0,0')
-        collect.append('MVENT,65,76,11,H,2.8,0.06,H,2.8,0.06,0.25,200,300,TIME,,,0,1,0,1,0,0')
-        collect.append('MVENT,36,76,12,H,2.8,0.08,H,2.8,0.08,0.31,200,300,TIME,,,0,1,0,1,0,0')
-        collect.append('MVENT,60,76,13,H,2.8,0.08,H,2.8,0.08,0.33,200,300,TIME,,,0,1,0,1,0,0')
-        collect.append('MVENT,59,76,14,H,2.8,0.06,H,2.8,0.06,0.24,200,300,TIME,,,0,1,0,1,0,0')
-        collect.append('MVENT,58,76,15,H,2.8,0.06,H,2.8,0.06,0.24,200,300,TIME,,,0,1,0,1,0,0')
-        collect.append('MVENT,30,76,16,H,2.8,0.06,H,2.8,0.06,0.24,200,300,TIME,,,0,1,0,1,0,0')
-        collect.append('MVENT,32,76,17,H,2.8,0.06,H,2.8,0.06,0.24,200,300,TIME,,,0,1,0,1,0,0')
-        collect.append('MVENT,32,76,18,H,2.8,0.06,H,2.8,0.06,0.25,200,300,TIME,,,0,1,0,1,0,0')
-        collect.append('MVENT,33,76,19,H,2.8,0.06,H,2.8,0.06,0.25,200,300,TIME,,,0,1,0,1,0,0')
-        collect.append('MVENT,61,76,20,H,2.8,0.06,H,2.8,0.06,0.25,200,300,TIME,,,0,1,0,1,0,0')
-        collect.append('MVENT,62,76,21,H,2.8,0.06,H,2.8,0.06,0.25,200,300,TIME,,,0,1,0,1,0,0')
-        collect.append('MVENT,55,76,22,H,2.8,0.08,H,2.8,0.08,0.33,200,300,TIME,,,0,1,0,1,0,0')
-        collect.append('MVENT,63,76,23,H,2.8,0.08,H,2.8,0.08,0.31,200,300,TIME,,,0,1,0,1,0,0')
-        collect.append('MVENT,76,69,24,V,0.4,0.36,V,0.4,0.36,0.69,200,300,TIME,,,0,1,0,1,0,0')
-        collect.append('MVENT,76,69,25,V,0.4,0.36,V,0.4,0.36,1.46,200,300,TIME,,,0,1,0,1,0,0')
-        collect.append('MVENT,76,55,26,V,0.4,0.36,V,0.4,0.36,0.33,200,300,TIME,,,0,1,0,1,0,0')
-        collect.append('MVENT,76,62,27,V,0.4,0.36,V,0.4,0.36,0.66,200,300,TIME,,,0,1,0,1,0,0')
-        collect.append('MVENT,76,62,28,V,0.4,0.15,V,0.4,0.15,1.41,200,300,TIME,,,0,1,0,1,0,0')
-        collect.append('MVENT,76,72,29,V,0.4,0.20,V,0.4,0.20,0.31,200,300,TIME,,,0,1,0,1,0,0')
-
-
         #collect.append('MVENT,28,35,1,V,2.3,0.48,H,3,0.48,1.7,200,300,TIME,,,60,0,70,1,1,1')
-        #collect.append('MVENT,28,35,2,V,2.3,0.48,H,3,0.48,1.7,200,300,TIME,,,60,0,70,1,2.5,1')
-        #collect.append('MVENT,35,28,3,V,2.3,0.48,H,3,0.48,1.7,200,300,TIME,,,60,0,70,1,10,1')
-        #collect.append('MVENT,35,28,4,V,2.3,0.48,H,3,0.48,1.7,200,300,TIME,,,60,0,70,1,11,1')
-        #collect.append('MVENT,30,35,1,V,2.3,0.48,H,3,0.48,1.7,200,300,TIME,,,60,0,70,1,1,1')
-        #collect.append('MVENT,31,35,2,V,2.3,0.48,H,3,0.48,1.7,200,300,TIME,,,60,0,70,1,1,1')
-        #collect.append('MVENT,35,30,3,V,2.3,0.48,H,3,0.48,1.7,200,300,TIME,,,60,0,70,1,1,4')
-        #collect.append('MVENT,35,31,4,V,2.3,0.48,H,3,0.48,1.7,200,300,TIME,,,60,0,70,1,2,1')
         txt.append('\n'.join(str(i) for i in collect))
 
         return "\n".join(txt)+"\n" if len(txt)>1 else ""

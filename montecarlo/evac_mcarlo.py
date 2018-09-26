@@ -139,7 +139,6 @@ class EvacMcarlo():
             pre_evacuation=self.conf['settings']['pre_evacuation_time']['mean_and_sd_ordinary_room']
         else:
             pre_evacuation=self.conf['settings']['pre_evacuation_time']['mean_and_sd_room_of_fire_origin']
-        #print(room, self.conf['ROOM_OF_FIRE_ORIGIN'])
         return round(lognorm(s=1, loc=pre_evacuation[0], scale=pre_evacuation[1]).rvs(), 2)
 # }}}
 
@@ -166,7 +165,7 @@ class EvacMcarlo():
                 self._evac_conf['FLOORS_DATA'][floor]['EVACUEES'][e_id]['ORIGIN']         = self.evacuees_roadmaps_coords[floor][i].pop(0)
                 self._evac_conf['FLOORS_DATA'][floor]['EVACUEES'][e_id]['ROADMAP']        = self.evacuees_roadmaps_coords[floor][i]
                 self._evac_conf['FLOORS_DATA'][floor]['EVACUEES'][e_id]['ROADMAP_ROOMS']  = self.evacuees_roadmaps_rooms[floor][i]
-                self._evac_conf['FLOORS_DATA'][floor]['EVACUEES'][e_id]['PRE_EVACUATION'] = self._evacuee_pre_evacuation(self.evacuees_roadmaps_rooms[floor][i])
+                self._evac_conf['FLOORS_DATA'][floor]['EVACUEES'][e_id]['PRE_EVACUATION'] = self._evacuee_pre_evacuation(self.evacuees_roadmaps_rooms[floor][i][0])
 
                 speeds=self.conf['settings']['evacuees_speed_params']
                 self._evac_conf['FLOORS_DATA'][floor]['EVACUEES'][e_id]['ALPHA_V']        = round(normal(*speeds['alpha_v_mean_and_sd'])     , 2)
