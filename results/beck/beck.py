@@ -16,6 +16,7 @@ from event_tree_en import EventTreeFED
 from event_tree_en import EventTreeSteel
 import scipy.stats as stat
 import collections
+from include import Sqlite
 
 
 class processDists:
@@ -251,14 +252,15 @@ class processDists:
 
     def calculate_barrois(self, area):
         other_building = [1.18, 1e-4, -1.87, -0.20]
-        office = [0.056, 3e-6, -0.65, -0.05]
+        office = [0.056, 3e-6, -2.0, -0.05]
         warehouse = [3.82, 2e-6, -2.08, -0.05]
         commercial = [7e-5, 6e-6, -0.65, -0.05]
         nursing = [2e-4, 5e-6, -0.61, -0.05]
+        educational = [0.003, 3e-6, -1.26, -0.05]
         building = {'other_building': other_building, 'office': office, 'warehouse': warehouse, 'commercial': commercial,
-                    'nursing': nursing}
+                    'nursing': nursing, 'educational': educational}
         b_type = 'office'
-        ignition = building[b_type][0]*(area) ** (building[b_type][2]) + \
+        ignition = building[b_type][0] * (area) ** (building[b_type][2]) + \
                    building[b_type][1] * (area) ** (building[b_type][3])
         return ignition
 
@@ -316,6 +318,10 @@ class processDists:
         mean = results[0][0]
         return [lower, mean]
 
+    def calculate_building_area(self):
+        s=Sqlite("{}/aamks.sqlite".format(self.dir))
+        result = s.query("SELECT sum(room_area) as total FROM aamks_geom");
+        return result[0]['total']
 
 p = processDists()
 p.plot_dcbe_dist()
@@ -332,7 +338,8 @@ p.plot_ccdf()
 p.plot_losses_hist()
 p.plot_pie_fault()
 #print(p.total)
-bar = p.calculate_barrois(19268)*15.3
+
+bar = p.calculate_barrois(p.calculate_building_area())*p.calculate_building_area()
 #bar = 10e-6 * 1530
 #print(bar)
 #if p.losses_num[4] == 0:
