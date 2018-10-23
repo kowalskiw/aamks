@@ -208,7 +208,7 @@ class Worker:
                 time_frame += 10
             else:
                 time.sleep(1)
-            if time_frame > 1100:
+            if time_frame > (self.vars['conf']['general']['simulation_time'] - 10):
                 break
             if prod(array(l)) > 0:
                 break

@@ -157,7 +157,9 @@ class EvacEnv:
         #logging.info('Time: {}, floor: {}, evacuated: {}'.format(self.get_simulation_time(), self.floor, exited))
         if (exited > len(self.finished) * 0.1) and self.per_9 == 0:
             self.per9 = self.current_time
-        if all(x == 0 for x in self.finished) and self.rset == 0:
+        #if all(x == 0 for x in self.finished) and self.rset == 0:
+        #    self.rset = self.current_time
+        if exited > self.get_number_of_evacuees()*0.98:
             self.rset = self.current_time
 
     def record_data(self):
